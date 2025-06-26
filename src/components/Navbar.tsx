@@ -19,11 +19,11 @@ const Navbar: React.FC<NavbarProps> = ({ setCurrentPage }) => {
     setCurrentPage(page);
     setIsOpen(false);
     setIsPeriodeOpen(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const navigatePeriode = (year: number) => {
     navigate(`periode-${year}`);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
