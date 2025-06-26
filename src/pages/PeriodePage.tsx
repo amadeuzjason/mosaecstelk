@@ -151,7 +151,7 @@ const PeriodePage: React.FC<PeriodePageProps> = ({ year }) => {
         <img
           src={`/assets/periode/${year}/tim${year}.jpg`}
           alt={`Foto tim periode ${year}`}
-          className="w-full h-228 object-cover shadow-lg"
+          className="w-full lg:h-228 md:h-full object-cover shadow-lg"
         />
       </div>
 
