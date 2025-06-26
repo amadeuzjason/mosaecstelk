@@ -6,8 +6,11 @@ import React from 'react';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata = {
-  title: 'MOSAEC STELK - Majelis Organisasi Siswa & Aspirasi EC STELK',
+  title: 'MOSAEC STELK - Official Website',
   description: 'Website resmi MOSAEC STELK.',
+  icons: {
+    icon: "assets/logo/mosaec.png", // ganti ke nama file kamu jika berbeda
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

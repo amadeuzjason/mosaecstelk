@@ -11,33 +11,35 @@ interface EventItem {
 const EventsPage: React.FC = () => {
   const events: EventItem[] = [
     {
-      title: 'MOSAEC Fest 2024',
-      date: '15 - 17 Agustus 2024',
+      title: 'PRISMA`25 MATH COMPETITION',
+      date: '1 Februari 2025',
       description:
-        'Festival tahunan yang menampilkan bakat siswa di bidang seni, musik, dan teknologi. Dimeriahkan dengan berbagai lomba dan bazaar.',
-      image: 'https://placehold.co/600x400/b91c1c/ffffff?text=MOSAEC+Fest',
+        'Kompetisi Olimpiade Matematika yang diselenggarakan oleh Universitas Muhammadiyah Makassar',
+      image: '/assets/events/prisma25.jpg',
+    //   image: 'https://placehold.co/600x400/b91c1c/ffffff?text=PRISMA25',
     },
     {
-      title: 'LDKS (Latihan Dasar Kepemimpinan Siswa)',
-      date: '20 - 22 September 2024',
+      title: 'MOSAEC: Calculation Project (MAC)',
+      date: '1 Maret - 17 Mei 2024',
       description:
-        'Program pelatihan untuk calon pengurus organisasi, bertujuan untuk membangun karakter pemimpin yang tangguh dan bertanggung jawab.',
-      image: 'https://placehold.co/600x400/7f1d1d/ffffff?text=LDKS',
+        'Projek membuat calculator, tidak hanya menambah pemahaman tentang Matematika, juga memperkenalkan mengenai pemrograman.',
+      image: '/assets/events/mac.jpg',
+    //   image: 'https://placehold.co/600x400/7f1d1d/ffffff?text=MAC',
     },
-    {
-      title: "Webinar Teknologi 'Future-Ready'",
-      date: '5 Oktober 2024',
-      description:
-        'Webinar inspiratif bersama praktisi industri IT, membahas tren teknologi terbaru dan persiapan karir di dunia digital.',
-      image: 'https://placehold.co/600x400/991b1b/ffffff?text=Webinar+Tech',
-    },
-    {
-      title: 'Peringatan Hari Guru Nasional',
-      date: '25 November 2024',
-      description:
-        'Acara spesial untuk mengapresiasi jasa para guru di SMK Telkom Makassar. Termasuk upacara, persembahan siswa, dan games seru.',
-      image: 'https://placehold.co/600x400/7f1d1d/ffffff?text=Hari+Guru',
-    },
+    // {
+    //   title: "Webinar Teknologi 'Future-Ready'",
+    //   date: '5 Oktober 2024',
+    //   description:
+    //     'Webinar inspiratif bersama praktisi industri IT, membahas tren teknologi terbaru dan persiapan karir di dunia digital.',
+    //   image: 'https://placehold.co/600x400/991b1b/ffffff?text=Webinar+Tech',
+    // },
+    // {
+    //   title: 'Peringatan Hari Guru Nasional',
+    //   date: '25 November 2024',
+    //   description:
+    //     'Acara spesial untuk mengapresiasi jasa para guru di SMK Telkom Makassar. Termasuk upacara, persembahan siswa, dan games seru.',
+    //   image: 'https://placehold.co/600x400/7f1d1d/ffffff?text=Hari+Guru',
+    // },
   ];
 
   const EventCard: React.FC<EventItem> = ({ title, date, description, image }) => (
@@ -45,7 +47,7 @@ const EventsPage: React.FC = () => {
       <img
         src={image}
         alt={`Gambar untuk ${title}`}
-        className="w-full h-56 object-cover"
+        className="w-full h-56 object-cover bg-red-800"
         onError={(e) => {
           (e.target as HTMLImageElement).onerror = null;
           (e.target as HTMLImageElement).src =

@@ -10,21 +10,21 @@ import EventsPage from '../pages/EventsPage';
 const App: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<string>('home');
 
-  const renderPage = () => {
-    if (currentPage.startsWith('periode-')) {
-      const year = parseInt(currentPage.split('-')[1], 10);
-      return <PeriodePage year={year} />;
-    }
+const renderPage = () => {
+  if (currentPage.startsWith('periode-')) {
+    const year = parseInt(currentPage.split('-')[1], 10);
+    return <PeriodePage year={year} />;
+  }
 
-    switch (currentPage) {
-      case 'home':
-        return <HomePage />;
-      case 'events':
-        return <EventsPage />;
-      default:
-        return <HomePage />;
-    }
-  };
+  switch (currentPage) {
+    case 'home':
+      return <HomePage setCurrentPage={setCurrentPage} />;
+    case 'events':
+      return <EventsPage />;
+    default:
+      return <HomePage setCurrentPage={setCurrentPage} />;
+  }
+};
 
   return (
     <div className="font-sans bg-gray-100">
@@ -51,5 +51,6 @@ const App: React.FC = () => {
     </div>
   );
 };
+
 
 export default App;
