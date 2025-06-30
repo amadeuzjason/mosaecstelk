@@ -40,9 +40,9 @@ const data: AllPeriodeData = {
   2023: {
     pembina: { name: "MUH ADE SYAM AGUNG S.PD", ig: "adesyamagung.muh", image: "MUH ADE SYAM AGUNG" },
     ketua: { name: "SHAQUILLE RASHAUN SAHL TAMRIN", ig: "shaqy9", image: "SHAQUILLE RASHAUN SAHL TAMRIN" },
-    wakil: { name: "NURAINI NAFISA ZAHIRA", ig: "tyiiaaa", image: "NURAINI NAFISA ZAHIRA" },
+    wakil: { name: "RAHMATHIA RAMADHANI", ig: "tyiiaaa", image: "RAHMATHIA RAMADHANI" },
     sekretaris: { name: "NUR ASYSYAMDINI.S", ig: "diniysss_s", image: "NUR ASYSYAMDINI.S" },
-    bendahara: { name: "RAHMATHIA RAMADHANI", ig: "nnafisaz", image: "RAHMATHIA RAMADHANI" },
+    bendahara: { name: "NURAINI NAFISA ZAHIRA", ig: "nnafisaz", image: "NURAINI NAFISA ZAHIRA" },
   },
   2024: {
     pembina: { name: "MUH ADE SYAM AGUNG S.PD", ig: "adesyamagung.muh", image: "MUH ADE SYAM AGUNG" },
