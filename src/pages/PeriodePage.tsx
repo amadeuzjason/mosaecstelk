@@ -33,12 +33,12 @@ interface TopMemberLayoutProps extends MemberCardProps {
 
 const data: AllPeriodeData = {
   2022: {
-    pembina: { name: "CHAERUNNISA DARWIS S.PD", ig: "nisaadarwis25" },
+    pembina: { name: "CHAERUNNISA DARWIS S.PD", ig: "nisaadarwis25", image: "Chaerunnisa Darwis"},
     ketua: { name: "ANDI RIZKY ALYA ANUGRAH", ig: "aandialyaa", image: "alya" },
     wakil: { name: "NURAZIZAH DWI PUTRI", ig: "nrazzh_0829", image: "chica" },
   },
   2023: {
-    pembina: { name: "MUH ADE SYAM AGUNG S.PD", ig: "adesyamagung.muh", image: "MUH ADE SYAM AGUNG" },
+    pembina: { name: "CHAERUNNISA DARWIS S.PD", ig: "nisaadarwis25", image: "Chaerunnisa Darwis"},
     ketua: { name: "SHAQUILLE RASHAUN SAHL TAMRIN", ig: "shaqy9", image: "SHAQUILLE RASHAUN SAHL TAMRIN" },
     wakil: { name: "RAHMATHIA RAMADHANI", ig: "tyiiaaa", image: "RAHMATHIA RAMADHANI" },
     sekretaris: { name: "NUR ASYSYAMDINI.S", ig: "diniysss_s", image: "NUR ASYSYAMDINI.S" },
@@ -52,8 +52,8 @@ const data: AllPeriodeData = {
     bendahara: { name: "NURUL RIFDA MUSTOFA", ig: "nurull1008_" },
   },
   2025: {
-    pembina: { name: "DEWI S.PD", ig: "dewif4834" },
-    ketua: { name: "JASON DARYL AMADEUS", ig: "jasondeuz" },
+    pembina: { name: "DEWI S.PD", ig: "dewif4834", image: "DEWI" },
+    ketua: { name: "JASON DARYL AMADEUS", ig: "jasondeuz", image: "JASON DARYL AMADEUS" },
     wakil: { name: "NABILAH HASRIL SALSABILAH", ig: "nbilaslsbila__" },
     sekretaris: { name: "TAQAVI DERASKYAN ALI", ig: "derakhsyan_09" },
     wakil_sekretaris: { name: "SALWA FAIQAH", ig: "slwaafaiqhh" },
