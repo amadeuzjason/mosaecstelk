@@ -1,94 +1,181 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MenuIcon, CloseIcon } from './icons';
 
 interface NavbarProps {
   setCurrentPage: (page: string) => void;
 }
 
+// No mapping needed - we use period numbers directly for navigation
+
 const Navbar: React.FC<NavbarProps> = ({ setCurrentPage }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [isPeriodeOpen, setIsPeriodeOpen] = useState(false);
-  const periodeList = [
-  { key: 2025, display: "2024/2025" },
-  { key: 2024, display: "2024" },
-  { key: 2023, display: "2023/2024" },
-  { key: 2022, display: "2022/2023" },
-];
+  const [isAngkatanOpen, setIsAngkatanOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  
+  const angkatanList = [32, 31, 30, 29];
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const navigate = (page: string) => {
     setCurrentPage(page);
     setIsOpen(false);
-    setIsPeriodeOpen(false);
+    setIsAngkatanOpen(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const navigatePeriode = (year: number) => {
-    navigate(`periode-${year}`);
+  const navigateAngkatan = (period: number) => {
+    navigate(`periode-${period}`);
   };
 
   return (
-    <nav className="bg-white shadow-md sticky top-0 z-50">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex items-center justify-between h-20">
-                    <div className="flex items-center space-x-3">
-                        {/* Logos */}
-                        {/* <img src="https://placehold.co/40x40/000000/FFFFFF?text=L1" alt="Logo SMK Telkom" className="h-10 w-10"/>
-                        <img src="https://placehold.co/40x40/A30000/FFFFFF?text=M" alt="Logo MOSAEC" className="h-10 w-10 rounded-full"/> */}
-                        <img src="assets/logo/stelkmks.png" alt="Logo SMK Telkom" className="h-10 w-10"/>
-                        <img src="assets/logo/mosaec.png" alt="Logo MOSAEC" className="h-10 w-10 rounded-full"/>
-
-                        <a onClick={() => navigate('home')} className="text-xl font-bold text-red-800 cursor-pointer">
-                           MOSAEC STELK
-                        </a>
-                    </div>
-                    <div className="hidden md:block">
-                        <div className="ml-10 flex items-baseline space-x-4">
-                            <a onClick={() => navigate('home')} className="text-gray-600 hover:bg-red-800 hover:text-white px-3 py-2 rounded-md text-sm font-medium cursor-pointer">Home</a>
-                            <div className="relative">
-                                <button onClick={() => setIsPeriodeOpen(!isPeriodeOpen)} className="text-gray-600 hover:bg-red-800 hover:text-white px-3 py-2 rounded-md text-sm font-medium flex items-center">
-                                    Periode
-                                    <svg className={`w-4 h-4 ml-1 transition-transform duration-200 ${isPeriodeOpen ? 'transform rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
-                                </button>
-                                {isPeriodeOpen && (
-                                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-20">
-                                        {periodeList.map(({ key, display }) => (
-                                        <a key={key} onClick={() => navigatePeriode(key)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">{display}</a>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                            <a onClick={() => navigate('events')} className="text-gray-600 hover:bg-red-800 hover:text-white px-3 py-2 rounded-md text-sm font-medium cursor-pointer">Events</a>
-                        </div>
-                    </div>
-                    <div className="-mr-2 flex md:hidden">
-                        <button onClick={() => setIsOpen(!isOpen)} className="bg-red-800 inline-flex items-center justify-center p-2 rounded-md text-white hover:bg-red-900 focus:outline-none">
-                            <span className="sr-only">Open main menu</span>
-                            {isOpen ? <CloseIcon /> : <MenuIcon />}
-                        </button>
-                    </div>
-                </div>
+    <nav className={`sticky top-0 z-50 transition-all duration-300 ${
+      scrolled 
+        ? 'bg-white/80 backdrop-blur-md shadow-lg border-b border-red-100' 
+        : 'bg-white/60 backdrop-blur-sm'
+    }`}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-20">
+          <div className="flex items-center space-x-3 group">
+            <div className="flex items-center space-x-2 transform group-hover:scale-105 transition-transform duration-300">
+              <img 
+                src="assets/logo/stelkmks.png" 
+                alt="Logo SMK Telkom" 
+                className="h-10 w-10 transform hover:rotate-12 transition-transform duration-300"
+              />
+              <img 
+                src="assets/logo/mosaec.png" 
+                alt="Logo MOSAEC" 
+                className="h-10 w-10 rounded-full transform hover:rotate-12 transition-transform duration-300"
+              />
             </div>
-            {isOpen && (
-                <div className="md:hidden">
-                    <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-                        <a onClick={() => navigate('home')} className="text-gray-600 hover:bg-red-800 hover:text-white block px-3 py-2 rounded-md text-base font-medium cursor-pointer">Home</a>
-                         <div className="relative">
-                            <button onClick={() => setIsPeriodeOpen(!isPeriodeOpen)} className="w-full text-left text-gray-600 hover:bg-red-800 hover:text-white block px-3 py-2 rounded-md text-base font-medium">
-                                Periode
-                            </button>
-                            {isPeriodeOpen && (
-                                <div className="pl-4">
-                                    {periodeList.map(({ key, display }) => (
-                                    <a key={key} onClick={() => navigatePeriode(key)} className="text-gray-500 hover:bg-gray-200 block px-3 py-2 rounded-md text-base font-medium cursor-pointer">{display}</a>
-                                    ))}
-
-                                </div>
-                            )}
-                        </div>
-                        <a onClick={() => navigate('events')} className="text-gray-600 hover:bg-red-800 hover:text-white block px-3 py-2 rounded-md text-base font-medium cursor-pointer">Events</a>
-                    </div>
+            <a 
+              onClick={() => navigate('home')} 
+              className="text-xl font-playfair font-bold text-red-800 cursor-pointer hover:text-red-900 transition-colors duration-300"
+            >
+              MOSAEC <span className="text-lg">STELK</span>
+            </a>
+          </div>
+          
+          <div className="hidden md:block">
+            <div className="ml-10 flex items-baseline space-x-2">
+              <a 
+                onClick={() => navigate('home')} 
+                className="text-gray-700 hover:text-red-800 hover:bg-red-50 px-4 py-2 rounded-lg text-sm font-medium cursor-pointer transition-all duration-300 hover:scale-105 relative group"
+              >
+                Home
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-red-800 transition-all duration-300 group-hover:w-full"></span>
+              </a>
+              
+              <div className="relative">
+                <button 
+                  onClick={() => setIsAngkatanOpen(!isAngkatanOpen)} 
+                  className="text-gray-700 hover:text-red-800 hover:bg-red-50 px-4 py-2 rounded-lg text-sm font-medium flex items-center transition-all duration-300 hover:scale-105 relative group"
+                >
+                  Angkatan
+                  <svg 
+                    className={`w-4 h-4 ml-1 transition-transform duration-300 ${isAngkatanOpen ? 'transform rotate-180' : ''}`} 
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+                  </svg>
+                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-red-800 transition-all duration-300 group-hover:w-full"></span>
+                </button>
+                
+                {isAngkatanOpen && (
+                  <div className="absolute right-0 mt-2 w-32 bg-white/90 backdrop-blur-md rounded-xl shadow-2xl py-2 z-20 border border-red-100 animate-fade-in">
+                    {angkatanList.map((period) => (
+                      <a 
+                        key={period} 
+                        onClick={() => navigateAngkatan(period)} 
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-800 cursor-pointer transition-all duration-300 hover:translate-x-1 font-medium"
+                      >
+                        Angkatan {period}
+                      </a>
+                    ))}
+                  </div>
+                )}
+              </div>
+              
+              <a 
+                onClick={() => navigate('events')} 
+                className="text-gray-700 hover:text-red-800 hover:bg-red-50 px-4 py-2 rounded-lg text-sm font-medium cursor-pointer transition-all duration-300 hover:scale-105 relative group"
+              >
+                Events
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-red-800 transition-all duration-300 group-hover:w-full"></span>
+              </a>
+            </div>
+          </div>
+          
+          <div className="-mr-2 flex md:hidden">
+            <button 
+              onClick={() => setIsOpen(!isOpen)} 
+              className="bg-red-800/90 backdrop-blur-sm inline-flex items-center justify-center p-2 rounded-lg text-white hover:bg-red-900 focus:outline-none transition-all duration-300 hover:scale-110 shadow-lg"
+            >
+              <span className="sr-only">Open main menu</span>
+              {isOpen ? <CloseIcon /> : <MenuIcon />}
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      {isOpen && (
+        <div className="md:hidden bg-white/95 backdrop-blur-md border-t border-red-100 animate-fade-in">
+          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+            <a 
+              onClick={() => navigate('home')} 
+              className="text-gray-700 hover:bg-red-50 hover:text-red-800 block px-4 py-3 rounded-lg text-base font-medium cursor-pointer transition-all duration-300"
+            >
+              Home
+            </a>
+            
+            <div className="relative">
+              <button 
+                onClick={() => setIsAngkatanOpen(!isAngkatanOpen)} 
+                className="w-full text-left text-gray-700 hover:bg-red-50 hover:text-red-800 block px-4 py-3 rounded-lg text-base font-medium transition-all duration-300 flex items-center justify-between"
+              >
+                Angkatan
+                <svg 
+                  className={`w-4 h-4 transition-transform duration-300 ${isAngkatanOpen ? 'transform rotate-180' : ''}`} 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+              </button>
+              
+              {isAngkatanOpen && (
+                <div className="pl-4 mt-1 space-y-1 animate-fade-in">
+                  {angkatanList.map((period) => (
+                    <a 
+                      key={period} 
+                      onClick={() => navigateAngkatan(period)} 
+                      className="text-gray-600 hover:bg-red-50 hover:text-red-800 block px-4 py-2 rounded-lg text-base font-medium cursor-pointer transition-all duration-300"
+                    >
+                      Angkatan {period}
+                    </a>
+                  ))}
                 </div>
-            )}
+              )}
+            </div>
+            
+            <a 
+              onClick={() => navigate('events')} 
+              className="text-gray-700 hover:bg-red-50 hover:text-red-800 block px-4 py-3 rounded-lg text-base font-medium cursor-pointer transition-all duration-300"
+            >
+              Events
+            </a>
+          </div>
+        </div>
+      )}
     </nav>
   );
 };
