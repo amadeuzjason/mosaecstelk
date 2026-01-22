@@ -1,0 +1,35 @@
+{
+  "pages": {
+    "/_not-found/page": [
+      "static/chunks/webpack-074987c53fb04d31.js",
+      "static/chunks/fd9d1056-bca2fb520b1e455f.js",
+      "static/chunks/117-c6373e3a71efbecd.js",
+      "static/chunks/main-app-a7e47767b3873acd.js",
+      "static/chunks/app/_not-found/page-93efa4bb891dbf6e.js"
+    ],
+    "/layout": [
+      "static/chunks/webpack-074987c53fb04d31.js",
+      "static/chunks/fd9d1056-bca2fb520b1e455f.js",
+      "static/chunks/117-c6373e3a71efbecd.js",
+      "static/chunks/main-app-a7e47767b3873acd.js",
+      "static/css/3885e75ea28ea6ae.css",
+      "static/chunks/app/layout-02be562af32c23fd.js"
+    ],
+    "/page": [
+      "static/chunks/webpack-074987c53fb04d31.js",
+      "static/chunks/fd9d1056-bca2fb520b1e455f.js",
+      "static/chunks/117-c6373e3a71efbecd.js",
+      "static/chunks/main-app-a7e47767b3873acd.js",
+      "static/chunks/118-ca1f9385900f4fd3.js",
+      "static/chunks/app/page-70c9e7743e56712a.js"
+    ],
+    "/latihan/page": [
+      "static/chunks/webpack-074987c53fb04d31.js",
+      "static/chunks/fd9d1056-bca2fb520b1e455f.js",
+      "static/chunks/117-c6373e3a71efbecd.js",
+      "static/chunks/main-app-a7e47767b3873acd.js",
+      "static/chunks/665-d02e5d84e00c693c.js",
+      "static/chunks/app/latihan/page-86992687646b23ca.js"
+    ]
+  }
+}

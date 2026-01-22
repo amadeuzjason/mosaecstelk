@@ -11,7 +11,7 @@ export default function SearchBar() {
   const [isPending, startTransition] = useTransition()
   
   const handleSearch = useDebouncedCallback((term: string) => {
-    const params = new URLSearchParams(searchParams.toString())
+    const params = new URLSearchParams(searchParams?.toString() || '')
     if (term) {
       params.set('search', term)
     } else {
@@ -33,7 +33,7 @@ export default function SearchBar() {
         placeholder="Cari soal dengan kata kunci..."
         className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition duration-150 ease-in-out shadow-sm"
         onChange={(e) => handleSearch(e.target.value)}
-        defaultValue={searchParams.get('search')?.toString()}
+        defaultValue={searchParams?.get('search')?.toString()}
       />
       {isPending && (
         <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">

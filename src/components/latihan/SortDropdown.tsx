@@ -6,11 +6,11 @@ import { useCallback } from 'react'
 export default function SortDropdown() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const currentSort = searchParams.get('sort') || 'newest'
+  const currentSort = searchParams?.get('sort') || 'newest'
 
   const createQueryString = useCallback(
     (name: string, value: string) => {
-      const params = new URLSearchParams(searchParams.toString())
+      const params = new URLSearchParams(searchParams?.toString() || '')
       params.set(name, value)
       return params.toString()
     },

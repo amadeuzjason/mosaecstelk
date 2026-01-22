@@ -10,7 +10,7 @@ export default function FilterSidebar() {
 
   const createQueryString = useCallback(
     (name: string, value: string) => {
-      const params = new URLSearchParams(searchParams.toString())
+      const params = new URLSearchParams(searchParams?.toString() || '')
       const current = params.get(name)?.split(',') || []
       
       if (current.includes(value)) {
@@ -35,7 +35,7 @@ export default function FilterSidebar() {
   }
 
   const isChecked = (type: 'grade' | 'subject', value: string) => {
-    const params = searchParams.get(type)?.split(',') || []
+    const params = searchParams?.get(type)?.split(',') || []
     return params.includes(value)
   }
 
