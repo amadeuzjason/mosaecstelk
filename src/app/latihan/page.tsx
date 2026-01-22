@@ -18,18 +18,18 @@ export default async function LatihanPage({
   searchParams: { [key: string]: string | string[] | undefined }
 }) {
   const grade = typeof searchParams.grade === 'string' 
-    ? searchParams.grade.split(',') as GradeLevel[] 
+    ? searchParams.grade.split(',').filter((g): g is GradeLevel => Object.values(GradeLevel).includes(g as GradeLevel))
     : undefined
     
   const subject = typeof searchParams.subject === 'string' 
-    ? searchParams.subject.split(',') as SubjectType[] 
+    ? searchParams.subject.split(',').filter((s): s is SubjectType => Object.values(SubjectType).includes(s as SubjectType))
     : undefined
     
   const search = typeof searchParams.search === 'string' 
     ? searchParams.search 
     : undefined
 
-  const difficulty = typeof searchParams.difficulty === 'string'
+  const difficulty = typeof searchParams.difficulty === 'string' && Object.values(Difficulty).includes(searchParams.difficulty as Difficulty)
     ? searchParams.difficulty as Difficulty
     : undefined
 
