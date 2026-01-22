@@ -54,3 +54,55 @@ export async function getQuestions({ grade, subject, search, difficulty, sort }:
 
   return questions
 }
+
+export async function getClassStats() {
+  // Get all questions to aggregate
+  const questions = await prisma.question.findMany({
+    select: {
+      grade: true,
+      subject: true,
+    }
+  });
+
+  // Group by grade
+  const stats = questions.reduce((acc, curr) => {
+    if (!acc[curr.grade]) {
+      acc[curr.grade] = {
+        grade: curr.grade,
+        questionCount: 0,
+        subjects: new Set<SubjectType>()
+      };
+    }
+    acc[curr.grade].questionCount++;
+    acc[curr.grade].subjects.add(curr.subject);
+    return acc;
+  }, {} as Record<GradeLevel, { grade: GradeLevel, questionCount: number, subjects: Set<SubjectType> }>);
+
+  return Object.values(stats).map(stat => ({
+    ...stat,
+    subjectCount: stat.subjects.size,
+    subjects: undefined // Remove set from output
+  }));
+}
+
+export async function getSubjectStats(grade: GradeLevel) {
+  const questions = await prisma.question.findMany({
+    where: { grade },
+    select: {
+      subject: true,
+    }
+  });
+
+  const stats = questions.reduce((acc, curr) => {
+    if (!acc[curr.subject]) {
+      acc[curr.subject] = {
+        subject: curr.subject,
+        questionCount: 0
+      };
+    }
+    acc[curr.subject].questionCount++;
+    return acc;
+  }, {} as Record<SubjectType, { subject: SubjectType, questionCount: number }>);
+
+  return Object.values(stats);
+}

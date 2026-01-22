@@ -1,11 +1,12 @@
 import React from 'react';
+import Link from 'next/link';
 
 // constants.ts (opsional), atau di file App.tsx/HomePage.tsx
 export const PERIODS = [32, 31, 30, 29];
 
 
 interface HomePageProps {
-  setCurrentPage: (page: string) => void;
+  setCurrentPage?: (page: string) => void;
 }
 
 // Mapping from period number to year for image paths only (since image folders are named by year)
@@ -178,10 +179,10 @@ const HomePage: React.FC<HomePageProps> = ({ setCurrentPage }) => {
             {PERIODS.map((period, index) => {
               const year = PERIOD_TO_YEAR_FOR_IMAGES[period];
               return (
-                <div
+                <Link
                   key={period}
-                  onClick={() => setCurrentPage(`periode-${period}`)}
-                  className="group relative rounded-xl overflow-hidden shadow-xl cursor-pointer h-64 transform hover:scale-110 hover:shadow-2xl transition-all duration-500 border-2 border-transparent hover:border-red-200 animate-fade-in"
+                  href={`/periode/${period}`}
+                  className="group relative rounded-xl overflow-hidden shadow-xl cursor-pointer h-64 transform hover:scale-110 hover:shadow-2xl transition-all duration-500 border-2 border-transparent hover:border-red-200 animate-fade-in block"
                   style={{ animationDelay: `${index * 0.1}s` }}
                 >
                   <img
@@ -197,7 +198,7 @@ const HomePage: React.FC<HomePageProps> = ({ setCurrentPage }) => {
                       </h3>
                     </div>
                   </div>
-                </div>
+                </Link>
               );
             })}
           </div>

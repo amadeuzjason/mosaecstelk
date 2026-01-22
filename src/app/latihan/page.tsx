@@ -1,86 +1,51 @@
-import { getQuestions } from './actions'
-import FilterSidebar from '@/components/latihan/FilterSidebar'
-import QuestionList from '@/components/latihan/QuestionList'
-import SearchBar from '@/components/latihan/SearchBar'
-import SortDropdown from '@/components/latihan/SortDropdown'
-import { GradeLevel, SubjectType, Difficulty } from '@prisma/client'
-import Navbar from '@/components/Navbar'
-import Footer from '@/components/Footer'
+import { getClassStats } from './actions'
+import ClassCard from '@/components/latihan/ClassCard'
 
 export const metadata = {
   title: 'Latihan Soal - MOSAEC',
-  description: 'Kumpulan soal latihan matematika untuk siswa SMK Telkom Makassar',
+  description: 'Pilih kelas untuk memulai latihan soal matematika.',
 }
 
-export default async function LatihanPage({
-  searchParams,
-}: {
-  searchParams: { [key: string]: string | string[] | undefined }
-}) {
-  const grade = typeof searchParams.grade === 'string' 
-    ? searchParams.grade.split(',').filter((g): g is GradeLevel => Object.values(GradeLevel).includes(g as GradeLevel))
-    : undefined
-    
-  const subject = typeof searchParams.subject === 'string' 
-    ? searchParams.subject.split(',').filter((s): s is SubjectType => Object.values(SubjectType).includes(s as SubjectType))
-    : undefined
-    
-  const search = typeof searchParams.search === 'string' 
-    ? searchParams.search 
-    : undefined
+export default async function LatihanPage() {
+  const stats = await getClassStats();
 
-  const difficulty = typeof searchParams.difficulty === 'string' && Object.values(Difficulty).includes(searchParams.difficulty as Difficulty)
-    ? searchParams.difficulty as Difficulty
-    : undefined
-
-  const sort = typeof searchParams.sort === 'string'
-    ? searchParams.sort
-    : undefined
-
-  const questions = await getQuestions({
-    grade,
-    subject,
-    search,
-    difficulty,
-    sort,
-  })
+  // Ensure we have entries for all grades even if no questions exist yet
+  const allGrades = ['CLASS_10', 'CLASS_11', 'CLASS_12'] as const;
+  const displayStats = allGrades.map(grade => {
+    const stat = stats.find(s => s.grade === grade);
+    return stat || { grade, questionCount: 0, subjectCount: 0 };
+  });
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      <Navbar />
-      
-      <main className="container mx-auto px-4 py-8 flex-grow">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Latihan Soal</h1>
-          <p className="text-gray-600">
-            Asah kemampuan matematikamu dengan kumpulan soal latihan yang tersedia.
-          </p>
-        </div>
+    <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
+      <main className="container mx-auto px-4 py-12 flex-grow">
+        <div className="max-w-4xl mx-auto">
+          {/* Breadcrumb */}
+          <nav className="flex text-sm font-medium text-gray-500 mb-8" aria-label="Breadcrumb">
+            <span className="text-gray-900">Latihan Soal</span>
+          </nav>
 
-        <div className="flex flex-col lg:flex-row gap-8">
-          {/* Sidebar */}
-          <aside className="w-full lg:w-64 flex-shrink-0 print:hidden">
-            <div className="sticky top-24">
-              <FilterSidebar />
-            </div>
-          </aside>
+          <div className="mb-12 text-center">
+            <h1 className="text-4xl font-bold text-gray-900 mb-4 font-playfair">
+              Pilih Kelas
+            </h1>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Silakan pilih jenjang kelas untuk melihat materi dan kumpulan soal latihan yang tersedia.
+            </p>
+          </div>
 
-          {/* Main Content */}
-          <div className="flex-1">
-            <div className="flex flex-col sm:flex-row gap-4 mb-6 print:hidden">
-              <div className="flex-grow">
-                <SearchBar />
-              </div>
-              <div className="flex-shrink-0">
-                <SortDropdown />
-              </div>
-            </div>
-            <QuestionList questions={questions} />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {displayStats.map((stat) => (
+              <ClassCard 
+                key={stat.grade}
+                grade={stat.grade}
+                subjectCount={stat.subjectCount}
+                questionCount={stat.questionCount}
+              />
+            ))}
           </div>
         </div>
       </main>
-
-      <Footer />
     </div>
   )
 }

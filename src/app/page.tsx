@@ -1,31 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
-import Navbar from '../components/Navbar';
-import Footer from '../components/Footer';
+import React from 'react';
 import HomePage from '../pages/HomePage';
-import PeriodePage from '../pages/PeriodePage';
-import EventsPage from '../pages/EventsPage';
 
 const App: React.FC = () => {
-  const [currentPage, setCurrentPage] = useState<string>('home');
-
-const renderPage = () => {
-  if (currentPage.startsWith('periode-')) {
-    const period = parseInt(currentPage.split('-')[1], 10);
-    return <PeriodePage period={period} />;
-  }
-
-  switch (currentPage) {
-    case 'home':
-      return <HomePage setCurrentPage={setCurrentPage} />;
-    case 'events':
-      return <EventsPage />;
-    default:
-      return <HomePage setCurrentPage={setCurrentPage} />;
-  }
-};
-
   return (
     <div className="font-sans bg-gray-100">
       {/* CSS Global untuk animasi */}
@@ -212,9 +190,7 @@ const renderPage = () => {
         }
       `}</style>
 
-      <Navbar setCurrentPage={setCurrentPage} />
-      <main className="min-h-screen">{renderPage()}</main>
-      <Footer />
+      <HomePage setCurrentPage={() => {}} />
     </div>
   );
 };
