@@ -9,6 +9,10 @@ datasource db {
   provider = "postgresql"
 }
 
+generator client {
+  provider = "prisma-client-js"
+}
+
 model Event {
   id           String   @id @default(cuid())
   title        String
