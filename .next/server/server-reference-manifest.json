@@ -1,1 +1,14 @@
-{"node":{"2a1f2d630dc15de029f4eb707214e552d6901b72":{"workers":{"app/latihan/page":"5183"},"layer":{"app/latihan/page":"rsc"}}},"edge":{},"encryptionKey":"f+Hmlngg0GRGt0UmuVcAuuqGRAO9OziPiP6PUZ09rVE="}
+{
+  "node": {
+    "2a1f2d630dc15de029f4eb707214e552d6901b72": {
+      "workers": {
+        "app/latihan/page": "(rsc)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22D%3A%5C%5C12%5C%5Cmosaecstelk%5C%5Cmosaecstelk%5C%5Csrc%5C%5Capp%5C%5Clatihan%5C%5Cactions.ts%22%2C%5B%22getQuestions%22%5D%5D%5D&__client_imported__=!"
+      },
+      "layer": {
+        "app/latihan/page": "rsc"
+      }
+    }
+  },
+  "edge": {},
+  "encryptionKey": "nVcKZwF4jjzXlHJJaT7E5kWrGqHTNLMv9GkTYPdPeCY="
+}
