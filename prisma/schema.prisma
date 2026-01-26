@@ -26,6 +26,7 @@ model Period {
   id        Int      @id @default(autoincrement())
   period    Int      @unique
   year      Int
+  image     String?
   members   Member[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

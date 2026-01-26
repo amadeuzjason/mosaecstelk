@@ -1,23 +1,84 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-
-// constants.ts (opsional), atau di file App.tsx/HomePage.tsx
-export const PERIODS = [32, 31, 30, 29];
-
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface HomePageProps {
   setCurrentPage?: (page: string) => void;
 }
 
-// Mapping from period number to year for image paths only (since image folders are named by year)
-const PERIOD_TO_YEAR_FOR_IMAGES: Record<number, number> = {
-  32: 2025,
-  31: 2024,
-  30: 2023,
-  29: 2022,
-};
+interface Period {
+  id: number;
+  period: number;
+  year: number;
+  image: string | null;
+}
 
 const HomePage: React.FC<HomePageProps> = ({ setCurrentPage }) => {
+  const [periods, setPeriods] = useState<Period[]>([]);
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  useEffect(() => {
+    const fetchPeriods = async () => {
+      try {
+        const response = await fetch('/api/periods');
+        if (response.ok) {
+          const data = await response.json();
+          setPeriods(data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch periods', error);
+      }
+    };
+    fetchPeriods();
+  }, []);
+
+  const nextSlide = () => {
+    setCurrentSlide((prev) => 
+      prev === periods.length - (window.innerWidth >= 1024 ? 4 : window.innerWidth >= 640 ? 2 : 1) 
+        ? 0 
+        : prev + 1
+    );
+  };
+
+  const prevSlide = () => {
+    setCurrentSlide((prev) => 
+      prev === 0 
+        ? periods.length - (window.innerWidth >= 1024 ? 4 : window.innerWidth >= 640 ? 2 : 1) 
+        : prev - 1
+    );
+  };
+
+  // Adjust max slide index based on screen size to prevent empty space
+  const getMaxIndex = () => {
+    if (typeof window === 'undefined') return 0;
+    if (window.innerWidth >= 1024) return Math.max(0, periods.length - 4);
+    if (window.innerWidth >= 640) return Math.max(0, periods.length - 2);
+    return Math.max(0, periods.length - 1);
+  };
+
+  // Ensure currentSlide is valid on resize
+  useEffect(() => {
+    const handleResize = () => {
+      const maxIndex = getMaxIndex();
+      if (currentSlide > maxIndex) {
+        setCurrentSlide(maxIndex);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [periods.length, currentSlide]);
+
+  const handleNext = () => {
+    const maxIndex = getMaxIndex();
+    setCurrentSlide(prev => prev >= maxIndex ? 0 : prev + 1);
+  };
+
+  const handlePrev = () => {
+    const maxIndex = getMaxIndex();
+    setCurrentSlide(prev => prev <= 0 ? maxIndex : prev - 1);
+  };
+
   return (
     <div className="animate-fade-in">
       {/* Hero Section */}
@@ -61,7 +122,7 @@ const HomePage: React.FC<HomePageProps> = ({ setCurrentPage }) => {
       </section>
 
       {/* About Us Section */}
-      <section id="about" className="py-20 bg-gradient-to-b from-white via-gray-50 to-white relative overflow-hidden">
+      <section id="about" className="py-20 bg-linear-to-b from-white via-gray-50 to-white relative overflow-hidden">
         {/* Mathematical background elements */}
         <div className="absolute inset-0 opacity-5">
           <div className="absolute top-10 left-10 text-6xl font-playfair animate-float-1">∑</div>
@@ -90,7 +151,7 @@ const HomePage: React.FC<HomePageProps> = ({ setCurrentPage }) => {
       </section>
 
       {/* Visi Misi Section */}
-      <section className="bg-gradient-to-br from-red-800 via-red-900 to-red-800 py-20 text-white relative overflow-hidden">
+      <section className="bg-linear-to-br from-red-800 via-red-900 to-red-800 py-20 text-white relative overflow-hidden">
         {/* Mathematical background elements */}
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-20 left-10 text-6xl font-playfair animate-float-1">∑</div>
@@ -142,7 +203,7 @@ const HomePage: React.FC<HomePageProps> = ({ setCurrentPage }) => {
             </div>
           </div>
           <div className="relative">
-            <div className="absolute inset-0 bg-gradient-to-br from-red-600/20 to-transparent rounded-2xl blur-xl"></div>
+            <div className="absolute inset-0 bg-linear-to-br from-red-600/20 to-transparent rounded-2xl blur-xl"></div>
             <img
               src="/assets/events/10feb23.jpg"
               alt="Ilustrasi Visi dan Misi MOSAEC"
@@ -153,7 +214,7 @@ const HomePage: React.FC<HomePageProps> = ({ setCurrentPage }) => {
       </section>
 
 {/* Arsip Kepengurusan Section */}
-      <section className="py-20 bg-gradient-to-b from-white via-gray-50 to-white relative overflow-hidden">
+      <section className="py-20 bg-linear-to-b from-white via-gray-50 to-white relative overflow-hidden">
         {/* Mathematical background elements */}
         <div className="absolute inset-0 opacity-5">
           <div className="absolute top-10 left-10 text-5xl font-playfair">∇</div>
@@ -175,32 +236,74 @@ const HomePage: React.FC<HomePageProps> = ({ setCurrentPage }) => {
               Lihat struktur kepengurusan dari setiap angkatan MOSAEC STELK
             </p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {PERIODS.map((period, index) => {
-              const year = PERIOD_TO_YEAR_FOR_IMAGES[period];
-              return (
-                <Link
-                  key={period}
-                  href={`/periode/${period}`}
-                  className="group relative rounded-xl overflow-hidden shadow-xl cursor-pointer h-64 transform hover:scale-110 hover:shadow-2xl transition-all duration-500 border-2 border-transparent hover:border-red-200 animate-fade-in block"
-                  style={{ animationDelay: `${index * 0.1}s` }}
+          <div className="relative px-4 md:px-12">
+            {/* Slider Controls */}
+            {periods.length > 4 && (
+              <>
+                <button 
+                  onClick={handlePrev}
+                  className="absolute left-0 top-1/2 -translate-y-1/2 z-20 bg-white/80 hover:bg-white text-red-800 p-2 rounded-full shadow-lg transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-red-500"
+                  aria-label="Previous slide"
                 >
-                  <img
-                    src={`/assets/periode/${year}/tim${year}.jpg`}
-                    alt={`Arsip Angkatan ${period}`}
-                    className="w-full h-full object-cover transform group-hover:scale-125 transition-transform duration-700"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20 flex items-center justify-center group-hover:bg-gradient-to-t group-hover:from-black/70 group-hover:via-black/30 group-hover:to-black/10 transition-all duration-500">
-                    <div className="text-center">
-                      <span className="text-sm text-red-200 font-playfair italic mb-1 block">Angkatan</span>
-                      <h3 className="text-white text-4xl md:text-5xl font-playfair font-bold transform group-hover:scale-110 transition-transform duration-300">
-                        {period}
-                      </h3>
+                  <ChevronLeft size={24} />
+                </button>
+                <button 
+                  onClick={handleNext}
+                  className="absolute right-0 top-1/2 -translate-y-1/2 z-20 bg-white/80 hover:bg-white text-red-800 p-2 rounded-full shadow-lg transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-red-500"
+                  aria-label="Next slide"
+                >
+                  <ChevronRight size={24} />
+                </button>
+              </>
+            )}
+
+            <div className="overflow-hidden">
+              <div 
+                className="flex transition-transform duration-500 ease-out"
+                style={{ 
+                  transform: `translateX(-${currentSlide * (100 / (typeof window !== 'undefined' && window.innerWidth >= 1024 ? 4 : typeof window !== 'undefined' && window.innerWidth >= 640 ? 2 : 1))}%)` 
+                }}
+              >
+                {periods.map((periodItem, index) => {
+                  const { period, year, image } = periodItem;
+                  
+                  let src = `/assets/periode/${year}/tim${year}.jpg`;
+                  if (image) {
+                    if (image.startsWith('http')) {
+                      src = image;
+                    } else {
+                      src = `/assets/periode/${year}/${image}`;
+                    }
+                  }
+
+                  return (
+                    <div 
+                      key={period} 
+                      className="w-full sm:w-1/2 lg:w-1/4 shrink-0 px-4"
+                    >
+                      <Link
+                        href={`/periode/${period}`}
+                        className="group relative rounded-xl overflow-hidden shadow-xl cursor-pointer h-64 transform hover:scale-105 hover:shadow-2xl transition-all duration-500 border-2 border-transparent hover:border-red-200 animate-fade-in block"
+                      >
+                        <img
+                          src={src}
+                          alt={`Arsip Angkatan ${period}`}
+                          className="w-full h-full object-cover transform group-hover:scale-125 transition-transform duration-700"
+                        />
+                        <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/40 to-black/20 flex items-center justify-center group-hover:bg-linear-to-t group-hover:from-black/70 group-hover:via-black/30 group-hover:to-black/10 transition-all duration-500">
+                          <div className="text-center">
+                            <span className="text-sm text-red-200 font-playfair italic mb-1 block">Angkatan</span>
+                            <h3 className="text-white text-4xl md:text-5xl font-playfair font-bold transform group-hover:scale-110 transition-transform duration-300">
+                              {period}
+                            </h3>
+                          </div>
+                        </div>
+                      </Link>
                     </div>
-                  </div>
-                </Link>
-              );
-            })}
+                  );
+                })}
+              </div>
+            </div>
           </div>
         </div>
       </section>

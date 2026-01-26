@@ -29,7 +29,9 @@ export async function GET(
       return NextResponse.json({ error: 'Period not found' }, { status: 404 });
     }
 
-    const formattedData: Record<string, any> = {};
+    const formattedData: Record<string, any> = {
+      periodImage: periodData.image
+    };
     
     periodData.members.forEach(member => {
       formattedData[member.position] = {

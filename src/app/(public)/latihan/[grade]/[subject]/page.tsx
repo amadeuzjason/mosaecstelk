@@ -1,4 +1,4 @@
-import { getQuestions } from '@/app/latihan/actions'
+import { getQuestions } from '../../actions'
 import QuizInterface from '@/components/latihan/QuizInterface'
 import { GradeLevel, SubjectType } from '@prisma/client'
 import Link from 'next/link'
@@ -41,7 +41,7 @@ export default async function QuizPage({
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
-      <main className="container mx-auto px-4 py-8 flex-grow">
+      <main className="container mx-auto px-4 py-8 grow">
         <div className="max-w-7xl mx-auto">
           {/* Breadcrumb */}
           <nav className="flex text-sm font-medium text-gray-500 mb-6" aria-label="Breadcrumb">

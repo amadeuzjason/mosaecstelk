@@ -46,9 +46,15 @@ const PERIOD_TO_YEAR_FOR_IMAGES: Record<number, number> = {
 
 const MemberCard: React.FC<MemberCardProps> = ({ name, position, ig, image, period }) => {
   const year = period ? PERIOD_TO_YEAR_FOR_IMAGES[period] : undefined;
-  const src = image && year
-    ? `/assets/periode/${year}/${image}.jpg`
-    : `https://placehold.co/400x600/4b5563/ffffff?text=${name.substring(0, 2)}`;
+  
+  let src = `https://placehold.co/400x600/4b5563/ffffff?text=${name.substring(0, 2)}`;
+  if (image) {
+    if (image.startsWith('http')) {
+      src = image;
+    } else if (year) {
+      src = `/assets/periode/${year}/${image}.jpg`;
+    }
+  }
 
   return (
     <div className="bg-white rounded-xl shadow-lg overflow-hidden transform hover:scale-110 hover:shadow-2xl transition-all duration-500 w-full max-w-[280px] border-2 border-transparent hover:border-red-200">
@@ -60,11 +66,11 @@ const MemberCard: React.FC<MemberCardProps> = ({ name, position, ig, image, peri
             e.currentTarget.src = `https://placehold.co/400x600/4b5563/ffffff?text=${name.substring(0,2)}`;
           }}
           alt={`Foto ${name}`}
-          className="w-full h-auto object-cover aspect-[2/3] transform hover:scale-110 transition-transform duration-700"
+          className="w-full h-auto object-cover aspect-2/3 transform hover:scale-110 transition-transform duration-700"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
+        <div className="absolute inset-0 bg-linear-to-t from-black/20 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
       </div>
-      <div className="p-5 text-center bg-gradient-to-b from-white to-gray-50">
+      <div className="p-5 text-center bg-linear-to-b from-white to-gray-50">
         <h4 className="text-lg font-bold text-gray-800 capitalize tracking-wide mb-1">{name.toLowerCase()}</h4>
         <p className="text-red-700 font-semibold capitalize mb-3">{position.replace(/_/g, ' ')}</p>
         <a href={`https://instagram.com/${ig}`} target="_blank" rel="noopener noreferrer"
@@ -79,12 +85,18 @@ const MemberCard: React.FC<MemberCardProps> = ({ name, position, ig, image, peri
 
 const TopMemberLayout: React.FC<TopMemberLayoutProps> = ({ name, position, ig, imageAlign, image, period }) => {
   const year = period ? PERIOD_TO_YEAR_FOR_IMAGES[period] : undefined;
-  const src = image && year
-    ? `/assets/periode/${year}/${image}.jpg`
-    : `https://placehold.co/400x600/ffffff/111827?text=${name.substring(0,2)}`;
+  
+  let src = `https://placehold.co/400x600/ffffff/111827?text=${name.substring(0, 2)}`;
+  if (image) {
+    if (image.startsWith('http')) {
+      src = image;
+    } else if (year) {
+      src = `/assets/periode/${year}/${image}.jpg`;
+    }
+  }
 
   const imageContent = (
-    <div className="flex-shrink-0 w-full max-w-[220px] sm:max-w-[240px]">
+    <div className="shrink-0 w-full max-w-[220px] sm:max-w-[240px]">
       <img
         src={src}
         onError={(e) => {
@@ -92,7 +104,7 @@ const TopMemberLayout: React.FC<TopMemberLayoutProps> = ({ name, position, ig, i
           e.currentTarget.src = `https://placehold.co/400x600/ffffff/111827?text=${name.substring(0,2)}`;
         }}
         alt={`Foto ${name}`}
-        className="w-full h-auto object-cover rounded-2xl shadow-2xl aspect-[2/3] hover:scale-110 transition-transform duration-700 border-4 border-white/20"
+        className="w-full h-auto object-cover rounded-2xl shadow-2xl aspect-2/3 hover:scale-110 transition-transform duration-700 border-4 border-white/20"
       />
     </div>
   );
@@ -159,12 +171,21 @@ const PeriodePage: React.FC<PeriodePageProps> = ({ period }) => {
     );
   }
 
-  const otherMembers = Object.entries(currentData).filter(([key]) => key !== 'pembina' && key !== 'ketua');
+  const otherMembers = Object.entries(currentData).filter(([key]) => key !== 'pembina' && key !== 'ketua' && key !== 'periodImage');
 
+  // Helper to safely get member data
+  const getMember = (key: string): Member | undefined => {
+    const data = currentData[key];
+    return (typeof data === 'object' && 'name' in data) ? (data as Member) : undefined;
+  };
+
+  const pembina = getMember('pembina');
+  const ketua = getMember('ketua');
+  const periodImageUrl = (currentData as any).periodImage as string | undefined;
 
   return (
     <div className="animate-fade-in">
-      <div className="text-center pt-20 pb-12 bg-gradient-to-b from-white to-gray-50 relative overflow-hidden">
+      <div className="text-center pt-20 pb-12 bg-linear-to-b from-white to-gray-50 relative overflow-hidden">
         {/* Mathematical background elements */}
         <div className="absolute inset-0 opacity-5">
           <div className="absolute top-10 left-10 text-6xl font-playfair">∑</div>
@@ -187,15 +208,17 @@ const PeriodePage: React.FC<PeriodePageProps> = ({ period }) => {
       </div>
 
       <div className="mb-12 bg-white relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-red-800/10 to-transparent z-10 pointer-events-none"></div>
+        <div className="absolute inset-0 bg-linear-to-r from-red-800/10 to-transparent z-10 pointer-events-none"></div>
         <img
-          src={`/assets/periode/${year}/tim${year}.jpg`}
+          src={periodImageUrl && periodImageUrl.startsWith('http') 
+            ? periodImageUrl 
+            : `/assets/periode/${year}/tim${year}.jpg`}
           alt={`Foto tim angkatan ${period}`}
           className="w-full lg:h-228 md:h-full object-cover shadow-2xl transform hover:scale-105 transition-transform duration-700"
         />
       </div>
-
-      <section className="bg-gradient-to-br from-red-800 via-red-900 to-red-800 py-20 text-white relative overflow-hidden">
+      
+      <section className="bg-linear-to-br from-red-800 via-red-900 to-red-800 py-20 text-white relative overflow-hidden">
         {/* Mathematical background elements */}
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-20 left-10 text-6xl font-playfair animate-float-1">∑</div>
@@ -205,25 +228,25 @@ const PeriodePage: React.FC<PeriodePageProps> = ({ period }) => {
         </div>
         
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16 relative z-10">
-          {currentData.pembina && (
+          {pembina && (
             <div className="transform hover:scale-105 transition-transform duration-500">
               <TopMemberLayout
-                name={currentData.pembina.name}
+                name={pembina.name}
                 position="Pembina"
-                ig={currentData.pembina.ig}
-                image={currentData.pembina.image}
+                ig={pembina.ig}
+                image={pembina.image}
                 imageAlign="left"
                 period={period}
               />
             </div>
           )}
-          {currentData.ketua && (
+          {ketua && (
             <div className="transform hover:scale-105 transition-transform duration-500">
               <TopMemberLayout
-                name={currentData.ketua.name}
+                name={ketua.name}
                 position="Ketua"
-                ig={currentData.ketua.ig}
-                image={currentData.ketua.image}
+                ig={ketua.ig}
+                image={ketua.image}
                 imageAlign="right"
                 period={period}
               />
@@ -232,7 +255,7 @@ const PeriodePage: React.FC<PeriodePageProps> = ({ period }) => {
         </div>
       </section>
 
-      <section className="bg-gradient-to-b from-gray-50 to-white py-20 relative overflow-hidden">
+      <section className="bg-linear-to-b from-gray-50 to-white py-20 relative overflow-hidden">
         {/* Mathematical background elements */}
         <div className="absolute inset-0 opacity-5">
           <div className="absolute top-10 left-10 text-5xl font-playfair">∇</div>
@@ -244,7 +267,9 @@ const PeriodePage: React.FC<PeriodePageProps> = ({ period }) => {
             Anggota Kepengurusan
           </h2>
           <div className="flex flex-wrap justify-center gap-8">
-            {otherMembers.map(([pos, member], index) => (
+            {otherMembers.map(([pos, memberData], index) => {
+              const member = memberData as Member;
+              return (
               <div 
                 key={pos}
                 className="animate-fade-in"
@@ -258,7 +283,7 @@ const PeriodePage: React.FC<PeriodePageProps> = ({ period }) => {
                   period={period}
                 />
               </div>
-            ))}
+            )})}
           </div>
         </div>
       </section>
