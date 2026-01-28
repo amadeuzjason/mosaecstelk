@@ -59,7 +59,13 @@ const EventsPage: React.FC = () => {
       <div className="p-6 flex-grow flex flex-col bg-gradient-to-b from-white to-gray-50">
         <h3 className="text-xl font-playfair font-bold text-gray-900 mb-2">{title}</h3>
         <p className="text-sm font-semibold text-red-700 mb-3 flex items-center gap-2">
-          <span className="text-lg">📅</span> {date}
+          <span className="text-lg">📅</span> 
+          {(() => {
+            const d = new Date(date);
+            return isNaN(d.getTime()) 
+              ? date 
+              : d.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+          })()}
         </p>
         <p className="text-gray-600 flex-grow mb-4 line-clamp-3">{description}</p>
         <button className="mt-auto inline-flex items-center text-red-800 font-semibold hover:text-red-900 group-hover:gap-3 transition-all duration-300">

@@ -175,7 +175,12 @@ export default function EventManager({
               <div className="p-5 flex-1 flex flex-col">
                 <div className="flex items-center text-xs text-red-600 font-medium mb-2">
                   <Calendar size={14} className="mr-1" />
-                  {new Date(event.date).toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'long', day: 'numeric' })}
+                  {(() => {
+                    const date = new Date(event.date);
+                    return isNaN(date.getTime()) 
+                      ? <span className="text-red-500">Invalid Date</span>
+                      : date.toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'long', day: 'numeric' });
+                  })()}
                 </div>
                 
                 <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-1">{event.title}</h3>
@@ -272,7 +277,11 @@ export default function EventManager({
                   <input
                     name="date"
                     type="date"
-                    defaultValue={editingEvent?.date ? new Date(editingEvent.date).toISOString().split('T')[0] : ''}
+                    defaultValue={(() => {
+                      if (!editingEvent?.date) return '';
+                      const date = new Date(editingEvent.date);
+                      return isNaN(date.getTime()) ? '' : date.toISOString().split('T')[0];
+                    })()}
                     className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all text-gray-800"
                     required
                   />
