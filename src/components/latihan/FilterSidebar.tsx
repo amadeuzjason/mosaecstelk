@@ -1,6 +1,7 @@
 'use client'
 
-import { GradeLevel, SubjectType } from '@prisma/client'
+import { GradeLevel } from '@prisma/client'
+import { SubjectType } from '@/lib/constants'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useCallback } from 'react'
 
