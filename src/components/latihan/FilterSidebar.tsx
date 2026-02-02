@@ -1,7 +1,7 @@
 'use client'
 
 import { GradeLevel } from '@prisma/client'
-import { SubjectType } from '@/lib/constants'
+import { SUBJECTS, SubjectType } from '@/lib/constants'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useCallback } from 'react'
 
@@ -64,7 +64,7 @@ export default function FilterSidebar() {
 
       <div>
         <h4 className="font-semibold mb-2 text-gray-700">Materi Pembelajaran</h4>
-        {Object.values(SubjectType).map((subject) => (
+        {SUBJECTS.map((subject) => (
           <div key={subject} className="flex items-center mb-2">
             <input
               type="checkbox"
