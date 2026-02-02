@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -26,53 +23,31 @@ model Period {
   id        Int      @id @default(autoincrement())
   period    Int      @unique
   year      Int
-  image     String?
-  members   Member[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-}
-
-enum GradeLevel {
-  CLASS_10
-  CLASS_11
-  CLASS_12
-}
-
-enum SubjectType {
-  SPLDV
-  MATRIKS
-  KALKULUS
-  ALJABAR
-  GEOMETRI
-  TRIGONOMETRI
-  STATISTIKA
-  PELUANG
-}
-
-enum Difficulty {
-  EASY
-  MEDIUM
-  HARD
+  image     String?
+  members   Member[]
 }
 
 model Question {
-  id          String      @id @default(cuid())
-  content     String
-  grade       GradeLevel
-  subject     SubjectType
-  difficulty  Difficulty
-  solution    String?
-  options     Option[]
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  id         String     @id @default(cuid())
+  content    String
+  grade      GradeLevel
+  difficulty Difficulty
+  solution   String?
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  image      String?
+  subject    String
+  options    Option[]
 }
 
 model Option {
-  id          String   @id @default(cuid())
-  content     String
-  isCorrect   Boolean  @default(false)
-  question    Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
-  questionId  String
+  id         String   @id @default(cuid())
+  content    String
+  isCorrect  Boolean  @default(false)
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
 }
 
 model Member {
@@ -81,8 +56,20 @@ model Member {
   ig        String
   image     String?
   position  String
-  period    Period   @relation(fields: [periodId], references: [id])
   periodId  Int
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  period    Period   @relation(fields: [periodId], references: [id])
+}
+
+enum GradeLevel {
+  CLASS_10
+  CLASS_11
+  CLASS_12
+}
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
 }

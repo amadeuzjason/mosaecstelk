@@ -1,7 +1,8 @@
 'use server'
 
 import { prisma } from '@/lib/prisma'
-import { GradeLevel, SubjectType, Difficulty, Prisma } from '@prisma/client'
+import { GradeLevel, Difficulty, Prisma } from '@prisma/client'
+import { SubjectType } from '@/lib/constants'
 
 export type GetQuestionsParams = {
   grade?: GradeLevel[]
@@ -74,7 +75,7 @@ export async function getClassStats() {
       };
     }
     acc[curr.grade].questionCount++;
-    acc[curr.grade].subjects.add(curr.subject);
+    acc[curr.grade].subjects.add(curr.subject as SubjectType);
     return acc;
   }, {} as Record<GradeLevel, { grade: GradeLevel, questionCount: number, subjects: Set<SubjectType> }>);
 
@@ -94,13 +95,14 @@ export async function getSubjectStats(grade: GradeLevel) {
   });
 
   const stats = questions.reduce((acc, curr) => {
-    if (!acc[curr.subject]) {
-      acc[curr.subject] = {
-        subject: curr.subject,
+    const subject = curr.subject as SubjectType;
+    if (!acc[subject]) {
+      acc[subject] = {
+        subject: subject,
         questionCount: 0
       };
     }
-    acc[curr.subject].questionCount++;
+    acc[subject].questionCount++;
     return acc;
   }, {} as Record<SubjectType, { subject: SubjectType, questionCount: number }>);
 

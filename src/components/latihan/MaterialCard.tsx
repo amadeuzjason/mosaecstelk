@@ -2,7 +2,8 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { GradeLevel, SubjectType } from '@prisma/client';
+import { GradeLevel } from '@prisma/client';
+import { SubjectType } from '@/lib/constants';
 
 interface MaterialCardProps {
   grade: GradeLevel;
@@ -29,7 +30,7 @@ const MaterialCard: React.FC<MaterialCardProps> = ({ grade, subject, questionCou
     }
   }, [grade, subject, questionCount]);
 
-  const getDisplayName = (subject: SubjectType) => {
+  const getDisplayName = (subject: string) => {
     // You can map enum to nicer names if needed, or just capitalize
     return subject.replace(/_/g, ' ');
   };

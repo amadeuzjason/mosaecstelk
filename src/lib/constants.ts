@@ -1,0 +1,16 @@
+export const SUBJECTS = [
+  'SPLDV',
+  'MATRIKS',
+  'KALKULUS',
+  'ALJABAR',
+  'GEOMETRI',
+  'TRIGONOMETRI',
+  'STATISTIKA',
+  'PELUANG',
+  'MOSAEC_EVALUATION'
+] as const;
+
+export type SubjectType = typeof SUBJECTS[number];
+
+export const GRADE_LEVELS = ['CLASS_10', 'CLASS_11', 'CLASS_12'] as const;
+export type GradeLevelType = typeof GRADE_LEVELS[number];

@@ -1,6 +1,6 @@
 import prisma from '@/lib/prisma'
 import LatihanManager from './LatihanManager'
-import { GradeLevel, SubjectType } from '@prisma/client'
+import { GradeLevel } from '@prisma/client'
 
 export default async function LatihanPage({
   searchParams,
@@ -9,7 +9,7 @@ export default async function LatihanPage({
 }) {
   const query = searchParams.q || ''
   const grade = searchParams.grade as GradeLevel | undefined
-  const subject = searchParams.subject as SubjectType | undefined
+  const subject = searchParams.subject as string | undefined
   const page = parseInt(searchParams.page || '1')
   const pageSize = 10
 

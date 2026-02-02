@@ -5,12 +5,20 @@ import { createQuestion, deleteQuestion, updateQuestion } from './actions'
 import { useFormState } from 'react-dom'
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import { useDebouncedCallback } from 'use-debounce'
-import { Plus, Search, Filter, Edit, Trash2, BookOpen, X, Save, AlertTriangle, CheckCircle, HelpCircle } from 'lucide-react'
+import { Plus, Search, Filter, Edit, Trash2, BookOpen, X, Save, AlertTriangle, CheckCircle, HelpCircle, Upload } from 'lucide-react'
 import { useToast } from '@/context/ToastContext'
+import { SUBJECTS, GRADE_LEVELS } from '@/lib/constants'
+import { uploadImage } from './upload-action'
+import { normalizeMath } from '@/lib/utils'
+
+import ReactMarkdown from 'react-markdown'
+import remarkMath from 'remark-math'
+import rehypeKatex from 'rehype-katex'
+import remarkGfm from 'remark-gfm'
 
 // Mirroring Prisma Enums
-const GradeLevels = ['CLASS_10', 'CLASS_11', 'CLASS_12']
-const Subjects = ['SPLDV', 'MATRIKS', 'KALKULUS', 'ALJABAR', 'GEOMETRI', 'TRIGONOMETRI', 'STATISTIKA', 'PELUANG']
+const GradeLevels = GRADE_LEVELS
+const Subjects = SUBJECTS
 const Difficulties = ['EASY', 'MEDIUM', 'HARD']
 
 type Option = {
@@ -26,6 +34,7 @@ type Question = {
   subject: string
   difficulty: string
   solution: string | null
+  image: string | null
   options: Option[]
 }
 
@@ -34,7 +43,21 @@ const initialState: { message?: string; error?: string } = {
   error: '',
 }
 
-export default function LatihanManager({ 
+function MarkdownPreview({ content }: { content: string }) {
+  if (!content) return null
+  return (
+    <div className="prose prose-sm max-w-none p-4 bg-gray-50 rounded-lg border border-gray-100 mt-2">
+      <ReactMarkdown
+        remarkPlugins={[remarkMath, remarkGfm]}
+        rehypePlugins={[rehypeKatex]}
+      >
+        {normalizeMath(content)}
+      </ReactMarkdown>
+    </div>
+  )
+}
+
+export default function LatihanManager({  
   questions,
   totalPages = 1,
   currentPage = 1
@@ -109,11 +132,60 @@ export default function LatihanManager({
   const [formOptions, setFormOptions] = useState<string[]>(['', '', '', ''])
   const [correctOption, setCorrectOption] = useState<number>(0)
 
+  // Subject input state
+  const [subjectValue, setSubjectValue] = useState<string>('')
+
+  // Image upload state
+  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [isUploading, setIsUploading] = useState(false)
+
+  // Content and Solution state
+  const [contentValue, setContentValue] = useState('')
+  const [solutionValue, setSolutionValue] = useState('')
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0]
+      if (file.size > 5 * 1024 * 1024) {
+        showToast('Image size must be less than 5MB', 'error')
+        return
+      }
+      setImageFile(file)
+      setImagePreview(URL.createObjectURL(file))
+    }
+  }
+
   const handleEdit = (question: Question) => {
     setEditingQuestion(question)
     setFormOptions(question.options.map(o => o.content))
     const correctIndex = question.options.findIndex(o => o.isCorrect)
     setCorrectOption(correctIndex >= 0 ? correctIndex : 0)
+    
+    // Handle subject state
+    setSubjectValue(question.subject)
+    
+    // Handle image state
+    setImagePreview(question.image)
+    setImageFile(null)
+
+    // Handle content/solution state
+    setContentValue(question.content)
+    setSolutionValue(question.solution || '')
+    
+    setIsModalOpen(true)
+  }
+
+  const handleCreateOpen = () => {
+    setEditingQuestion(null)
+    setFormOptions(['', '', '', ''])
+    setSubjectValue(Subjects[0])
+    
+    setImagePreview(null)
+    setImageFile(null)
+    setContentValue('')
+    setSolutionValue('')
+
     setIsModalOpen(true)
   }
 
@@ -143,7 +215,56 @@ export default function LatihanManager({
     setEditingQuestion(null)
     setFormOptions(['', '', '', ''])
     setCorrectOption(0)
+    
+    setImagePreview(null)
+    setImageFile(null)
+    setContentValue('')
+    setSolutionValue('')
+    setSubjectValue(Subjects[0])
+    
     setIsModalOpen(false)
+  }
+
+  const handleFormSubmit = async (formData: FormData) => {
+    setIsUploading(true)
+    try {
+        // Upload image if present
+        if (imageFile) {
+            const imageFormData = new FormData()
+            imageFormData.append('file', imageFile)
+            const uploadResult = await uploadImage(imageFormData)
+            
+            if (uploadResult.error || !uploadResult.url) {
+                throw new Error(uploadResult.error || 'Upload failed')
+            }
+            
+            formData.set('image', uploadResult.url)
+        } else if (imagePreview && editingQuestion && imagePreview === editingQuestion.image) {
+             // Keep existing image if not changed
+             formData.set('image', imagePreview)
+        } else {
+             // If image cleared
+             formData.delete('image')
+        }
+
+        // Add subject value manually since it's a controlled input
+        formData.set('subject', subjectValue)
+
+        // Add content and solution manually since they are controlled inputs
+        formData.set('content', contentValue)
+        formData.set('solution', solutionValue)
+
+        if (editingQuestion) {
+            updateAction(formData)
+        } else {
+            createAction(formData)
+        }
+    } catch (error) {
+        console.error('Upload error:', error)
+        showToast('Failed to upload image', 'error')
+    } finally {
+        setIsUploading(false)
+    }
   }
 
   const handleOptionChange = (index: number, value: string) => {
@@ -179,11 +300,7 @@ export default function LatihanManager({
             <p className="text-gray-500 mt-1">Manage practice questions, grades, and subjects</p>
         </div>
         <button
-            onClick={() => {
-              setEditingQuestion(null)
-              setFormOptions(['', '', '', ''])
-              setIsModalOpen(true)
-            }}
+            onClick={handleCreateOpen}
             className="flex items-center justify-center gap-2 bg-red-800 text-white px-4 py-2.5 rounded-lg hover:bg-red-900 transition-colors shadow-sm w-full sm:w-auto"
           >
             <Plus size={20} />
@@ -321,9 +438,9 @@ export default function LatihanManager({
 
       {/* Edit/Create Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto animate-in fade-in duration-200">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-3xl my-8 overflow-hidden animate-in zoom-in-95 duration-200">
-            <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="shrink-0 px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
                 <h2 className="text-lg font-bold text-gray-800">
                     {editingQuestion ? 'Edit Question' : 'Add New Question'}
                 </h2>
@@ -335,15 +452,51 @@ export default function LatihanManager({
                 </button>
             </div>
 
-            <form action={async (formData) => {
-                if (editingQuestion) {
-                    await updateAction(formData);
-                } else {
-                    await createAction(formData);
-                }
-                handleClose();
-            }} className="p-6 space-y-6">
+            <form action={handleFormSubmit} className="p-6 space-y-6 overflow-y-auto">
               {editingQuestion && <input type="hidden" name="id" value={editingQuestion.id} />}
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Question Image</label>
+                <div className="flex items-center gap-4">
+                  <div className="relative flex-1">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                      className="hidden"
+                      id="image-upload"
+                    />
+                    <label
+                      htmlFor="image-upload"
+                      className="flex items-center justify-center gap-2 w-full px-4 py-2 border border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
+                    >
+                      <Upload size={20} className="text-gray-400" />
+                      <span className="text-sm text-gray-600">
+                        {imageFile ? imageFile.name : 'Click to upload image'}
+                      </span>
+                    </label>
+                  </div>
+                  {imagePreview && (
+                    <div className="relative h-12 w-12 rounded-lg overflow-hidden border border-gray-200 group">
+                      <img
+                        src={imagePreview}
+                        alt="Preview"
+                        className="h-full w-full object-cover"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setImageFile(null)
+                          setImagePreview(null)
+                        }}
+                        className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X size={16} className="text-white" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
@@ -360,12 +513,19 @@ export default function LatihanManager({
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Subject</label>
                     <div className="relative">
-                        <select name="subject" defaultValue={editingQuestion?.subject || Subjects[0]} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all appearance-none bg-white">
-                            {Subjects.map(s => <option key={s} value={s}>{s}</option>)}
-                        </select>
-                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                            <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
-                        </div>
+                        <input 
+                            type="text" 
+                            name="subject"
+                            list="subject-list"
+                            value={subjectValue}
+                            onChange={(e) => setSubjectValue(e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all bg-white"
+                            placeholder="Select or type subject..."
+                            required
+                        />
+                        <datalist id="subject-list">
+                            {Subjects.map(s => <option key={s} value={s} />)}
+                        </datalist>
                     </div>
                 </div>
                 <div>
@@ -386,14 +546,18 @@ export default function LatihanManager({
                     <HelpCircle size={16} className="text-red-500" />
                     Question Content
                 </label>
-                <textarea
-                  name="content"
-                  defaultValue={editingQuestion?.content}
-                  required
-                  rows={4}
-                  placeholder="Enter your question here..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all resize-y"
-                />
+                <div className="flex flex-col gap-2">
+                  <textarea
+                    name="content"
+                    value={contentValue}
+                    onChange={(e) => setContentValue(e.target.value)}
+                    required
+                    rows={4}
+                    placeholder="Enter your question here... (Markdown & LaTeX supported)"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all resize-y"
+                  />
+                  <MarkdownPreview content={contentValue} />
+                </div>
               </div>
 
               <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
@@ -413,7 +577,7 @@ export default function LatihanManager({
                                 onChange={() => setCorrectOption(index)}
                                 className="h-5 w-5 text-red-600 focus:ring-red-500 border-gray-300"
                             />
-                            <div className="flex-1 relative">
+                            <div className="flex-1 relative flex flex-col gap-2">
                                 <input
                                     type="text"
                                     name={`option_content_${index}`}
@@ -423,6 +587,7 @@ export default function LatihanManager({
                                     required
                                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all"
                                 />
+                                <MarkdownPreview content={opt} />
                             </div>
                             <button 
                                 type="button" 
@@ -449,13 +614,17 @@ export default function LatihanManager({
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Solution (Explanation)</label>
-                <textarea
-                  name="solution"
-                  defaultValue={editingQuestion?.solution || ''}
-                  rows={3}
-                  placeholder="Explain why the answer is correct..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all resize-y"
-                />
+                <div className="flex flex-col gap-2">
+                  <textarea
+                    name="solution"
+                    value={solutionValue}
+                    onChange={(e) => setSolutionValue(e.target.value)}
+                    rows={3}
+                    placeholder="Explain why the answer is correct... (Markdown & LaTeX supported)"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all resize-y"
+                  />
+                  <MarkdownPreview content={solutionValue} />
+                </div>
               </div>
 
               <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">

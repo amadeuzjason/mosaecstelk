@@ -2,15 +2,16 @@
 
 import prisma from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
-import { GradeLevel, SubjectType, Difficulty } from '@prisma/client'
+import { GradeLevel, Difficulty } from '@prisma/client'
 
 export async function createQuestion(prevState: any, formData: FormData) {
   try {
     const content = formData.get('content') as string
     const grade = formData.get('grade') as GradeLevel
-    const subject = formData.get('subject') as SubjectType
+    const subject = formData.get('subject') as string
     const difficulty = formData.get('difficulty') as Difficulty
     const solution = formData.get('solution') as string
+    const image = formData.get('image') as string | null
 
     // Parse options
     // Expecting option_content_{i} and correct_option radio value
@@ -38,6 +39,7 @@ export async function createQuestion(prevState: any, formData: FormData) {
         subject,
         difficulty,
         solution,
+        image,
         options: {
           create: optionsData
         }
@@ -69,11 +71,12 @@ export async function deleteQuestion(formData: FormData) {
 export async function updateQuestion(prevState: any, formData: FormData) {
     try {
       const id = formData.get('id') as string
-      const content = formData.get('content') as string
-      const grade = formData.get('grade') as GradeLevel
-      const subject = formData.get('subject') as SubjectType
-      const difficulty = formData.get('difficulty') as Difficulty
+    const content = formData.get('content') as string
+    const grade = formData.get('grade') as GradeLevel
+    const subject = formData.get('subject') as string
+    const difficulty = formData.get('difficulty') as Difficulty
       const solution = formData.get('solution') as string
+      const image = formData.get('image') as string | null
   
       // For update, it's easier to delete existing options and recreate them
       // OR update them if we track IDs. For simplicity, delete and recreate is often used but changes IDs.
@@ -106,24 +109,22 @@ export async function updateQuestion(prevState: any, formData: FormData) {
                 subject,
                 difficulty,
                 solution,
+                image,
             }
         })
 
-        // Delete old options
+        // Delete existing options
         await tx.option.deleteMany({
             where: { questionId: id }
         })
 
         // Create new options
-        for (const opt of optionsData) {
-            await tx.option.create({
-                data: {
-                    content: opt.content,
-                    isCorrect: opt.isCorrect,
-                    questionId: id
-                }
-            })
-        }
+        await tx.option.createMany({
+            data: optionsData.map(opt => ({
+                ...opt,
+                questionId: id
+            }))
+        })
       })
   
       revalidatePath('/admin/latihan')

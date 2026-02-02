@@ -1,14 +1,46 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Question, Option, GradeLevel, SubjectType } from '@prisma/client';
+import { Question, Option, GradeLevel } from '@prisma/client';
 import { ChevronLeft, ChevronRight, CheckCircle, XCircle, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
+import ReactMarkdown from 'react-markdown';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
+import remarkGfm from 'remark-gfm';
+import { normalizeMath } from '@/lib/utils';
 
 interface QuizInterfaceProps {
   questions: (Question & { options: Option[] })[];
   grade: GradeLevel;
-  subject: SubjectType;
+  subject: string;
+}
+
+function RenderContent({ content }: { content: string }) {
+  return (
+    <div className="prose max-w-none">
+      <ReactMarkdown
+        remarkPlugins={[remarkMath, remarkGfm]}
+        rehypePlugins={[rehypeKatex]}
+      >
+        {normalizeMath(content)}
+      </ReactMarkdown>
+    </div>
+  );
+}
+
+function RenderOptionContent({ content }: { content: string }) {
+  return (
+    <ReactMarkdown
+      remarkPlugins={[remarkMath, remarkGfm]}
+      rehypePlugins={[rehypeKatex]}
+      components={{
+        p: ({node, ...props}) => <span {...props} />
+      }}
+    >
+      {normalizeMath(content)}
+    </ReactMarkdown>
+  );
 }
 
 const QuizInterface: React.FC<QuizInterfaceProps> = ({ questions, grade, subject }) => {
@@ -148,8 +180,17 @@ const QuizInterface: React.FC<QuizInterfaceProps> = ({ questions, grade, subject
 
             {/* Content */}
             <div className="p-6 md:p-8 flex-grow">
-              <div className="prose max-w-none mb-8 text-gray-800 text-lg">
-                {currentQuestion.content}
+              {currentQuestion.image && (
+                <div className="mb-6 rounded-xl overflow-hidden border border-gray-100">
+                  <img 
+                    src={currentQuestion.image} 
+                    alt="Question Image" 
+                    className="w-full h-auto max-h-[400px] object-contain bg-gray-50"
+                  />
+                </div>
+              )}
+              <div className="mb-8 text-gray-800 text-lg">
+                <RenderContent content={currentQuestion.content} />
               </div>
 
               <div className="space-y-3">
@@ -180,11 +221,11 @@ const QuizInterface: React.FC<QuizInterfaceProps> = ({ questions, grade, subject
                       disabled={isSubmitted}
                       className={`w-full text-left p-4 rounded-xl border-2 transition-all duration-200 flex items-start group ${optionClass}`}
                     >
-                      <span className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold mr-4 flex-shrink-0 transition-colors ${indicatorClass}`}>
+                      <span className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold mr-4 shrink-0 transition-colors ${indicatorClass}`}>
                         {String.fromCharCode(65 + idx)}
                       </span>
                       <span className={`text-base ${isSelected || (isSubmitted && option.isCorrect) ? 'text-gray-900 font-medium' : 'text-gray-600'}`}>
-                        {option.content}
+                        <RenderOptionContent content={option.content} />
                       </span>
                       {isSubmitted && option.isCorrect && (
                         <CheckCircle className="ml-auto w-5 h-5 text-green-600" />
@@ -200,7 +241,9 @@ const QuizInterface: React.FC<QuizInterfaceProps> = ({ questions, grade, subject
               {isSubmitted && currentQuestion.solution && (
                 <div className="mt-8 p-6 bg-blue-50 rounded-xl border border-blue-100">
                   <h4 className="font-bold text-blue-900 mb-2">Pembahasan:</h4>
-                  <div className="text-blue-800">{currentQuestion.solution}</div>
+                  <div className="text-blue-800">
+                    <RenderContent content={currentQuestion.solution} />
+                  </div>
                 </div>
               )}
             </div>
@@ -237,7 +280,7 @@ const QuizInterface: React.FC<QuizInterfaceProps> = ({ questions, grade, subject
         </div>
 
         {/* Sidebar Navigation Grid */}
-        <div className="w-full lg:w-80 flex-shrink-0">
+        <div className="w-full lg:w-80 shrink-0">
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 sticky top-24">
             <h3 className="font-bold text-gray-900 mb-4 flex items-center">
               Navigasi Soal

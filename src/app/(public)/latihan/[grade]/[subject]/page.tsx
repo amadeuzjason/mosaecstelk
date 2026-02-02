@@ -1,6 +1,7 @@
 import { getQuestions } from '../../actions'
 import QuizInterface from '@/components/latihan/QuizInterface'
-import { GradeLevel, SubjectType } from '@prisma/client'
+import { GradeLevel } from '@prisma/client'
+import { SUBJECTS, SubjectType } from '@/lib/constants'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 
@@ -18,7 +19,11 @@ export default async function QuizPage({
   const grade = params.grade as GradeLevel;
   const subject = params.subject as SubjectType;
 
-  if (!Object.values(GradeLevel).includes(grade) || !Object.values(SubjectType).includes(subject)) {
+  if (!Object.values(GradeLevel).includes(grade)) {
+    redirect('/latihan');
+  }
+
+  if (!SUBJECTS.includes(subject)) {
     redirect('/latihan');
   }
 
@@ -37,7 +42,7 @@ export default async function QuizPage({
     }
   };
 
-  const getSubjectName = (s: SubjectType) => s.replace(/_/g, ' ');
+  const getSubjectName = (s: string) => s.replace(/_/g, ' ');
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
