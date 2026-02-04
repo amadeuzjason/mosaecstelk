@@ -261,7 +261,8 @@ export default function LatihanManager({
         }
     } catch (error) {
         console.error('Upload error:', error)
-        showToast('Failed to upload image', 'error')
+        const errorMessage = error instanceof Error ? error.message : 'Failed to upload image'
+        showToast(errorMessage, 'error')
     } finally {
         setIsUploading(false)
     }

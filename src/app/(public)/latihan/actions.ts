@@ -13,98 +13,112 @@ export type GetQuestionsParams = {
 }
 
 export async function getQuestions({ grade, subject, search, difficulty, sort }: GetQuestionsParams) {
-  const where: Prisma.QuestionWhereInput = {}
+  try {
+    const where: Prisma.QuestionWhereInput = {}
 
-  if (grade && grade.length > 0) {
-    where.grade = { in: grade }
+    if (grade && grade.length > 0) {
+      where.grade = { in: grade }
+    }
+
+    if (subject && subject.length > 0) {
+      where.subject = { in: subject }
+    }
+
+    if (difficulty) {
+      where.difficulty = difficulty
+    }
+
+    if (search) {
+      where.content = { contains: search, mode: 'insensitive' }
+    }
+
+    let orderBy: Prisma.QuestionOrderByWithRelationInput = { createdAt: 'desc' }
+    
+    if (sort === 'oldest') {
+      orderBy = { createdAt: 'asc' }
+    }
+
+    const questions = await prisma.question.findMany({
+      where,
+      include: {
+        options: true
+      },
+      orderBy: (sort === 'difficulty_asc' || sort === 'difficulty_desc') ? undefined : orderBy
+    })
+
+    if (sort === 'difficulty_asc') {
+      const difficultyMap = { EASY: 1, MEDIUM: 2, HARD: 3 }
+      questions.sort((a, b) => difficultyMap[a.difficulty] - difficultyMap[b.difficulty])
+    } else if (sort === 'difficulty_desc') {
+      const difficultyMap = { EASY: 1, MEDIUM: 2, HARD: 3 }
+      questions.sort((a, b) => difficultyMap[b.difficulty] - difficultyMap[a.difficulty])
+    }
+
+    return questions
+  } catch (error) {
+    console.error('Error in getQuestions:', error)
+    return []
   }
-
-  if (subject && subject.length > 0) {
-    where.subject = { in: subject }
-  }
-
-  if (difficulty) {
-    where.difficulty = difficulty
-  }
-
-  if (search) {
-    where.content = { contains: search, mode: 'insensitive' }
-  }
-
-  let orderBy: Prisma.QuestionOrderByWithRelationInput = { createdAt: 'desc' }
-  
-  if (sort === 'oldest') {
-    orderBy = { createdAt: 'asc' }
-  }
-
-  const questions = await prisma.question.findMany({
-    where,
-    include: {
-      options: true
-    },
-    orderBy: (sort === 'difficulty_asc' || sort === 'difficulty_desc') ? undefined : orderBy
-  })
-
-  if (sort === 'difficulty_asc') {
-    const difficultyMap = { EASY: 1, MEDIUM: 2, HARD: 3 }
-    questions.sort((a, b) => difficultyMap[a.difficulty] - difficultyMap[b.difficulty])
-  } else if (sort === 'difficulty_desc') {
-    const difficultyMap = { EASY: 1, MEDIUM: 2, HARD: 3 }
-    questions.sort((a, b) => difficultyMap[b.difficulty] - difficultyMap[a.difficulty])
-  }
-
-  return questions
 }
 
 export async function getClassStats() {
-  // Get all questions to aggregate
-  const questions = await prisma.question.findMany({
-    select: {
-      grade: true,
-      subject: true,
-    }
-  });
+  try {
+    // Get all questions to aggregate
+    const questions = await prisma.question.findMany({
+      select: {
+        grade: true,
+        subject: true,
+      }
+    });
 
-  // Group by grade
-  const stats = questions.reduce((acc, curr) => {
-    if (!acc[curr.grade]) {
-      acc[curr.grade] = {
-        grade: curr.grade,
-        questionCount: 0,
-        subjects: new Set<SubjectType>()
-      };
-    }
-    acc[curr.grade].questionCount++;
-    acc[curr.grade].subjects.add(curr.subject as SubjectType);
-    return acc;
-  }, {} as Record<GradeLevel, { grade: GradeLevel, questionCount: number, subjects: Set<SubjectType> }>);
+    // Group by grade
+    const stats = questions.reduce((acc, curr) => {
+      if (!acc[curr.grade]) {
+        acc[curr.grade] = {
+          grade: curr.grade,
+          questionCount: 0,
+          subjects: new Set<SubjectType>()
+        };
+      }
+      acc[curr.grade].questionCount++;
+      acc[curr.grade].subjects.add(curr.subject as SubjectType);
+      return acc;
+    }, {} as Record<GradeLevel, { grade: GradeLevel, questionCount: number, subjects: Set<SubjectType> }>);
 
-  return Object.values(stats).map(stat => ({
-    ...stat,
-    subjectCount: stat.subjects.size,
-    subjects: undefined // Remove set from output
-  }));
+    return Object.values(stats).map(({ subjects, ...rest }) => ({
+      ...rest,
+      subjectCount: subjects.size,
+    }));
+  } catch (error) {
+    console.error('Error in getClassStats:', error)
+    return []
+  }
 }
 
 export async function getSubjectStats(grade: GradeLevel) {
-  const questions = await prisma.question.findMany({
-    where: { grade },
-    select: {
-      subject: true,
-    }
-  });
+  try {
+    const questions = await prisma.question.findMany({
+      where: { grade },
+      select: {
+        subject: true,
+      }
+    });
 
-  const stats = questions.reduce((acc, curr) => {
-    const subject = curr.subject as SubjectType;
-    if (!acc[subject]) {
-      acc[subject] = {
-        subject: subject,
-        questionCount: 0
-      };
-    }
-    acc[subject].questionCount++;
-    return acc;
-  }, {} as Record<SubjectType, { subject: SubjectType, questionCount: number }>);
+    const stats = questions.reduce((acc, curr) => {
+      const subject = curr.subject as SubjectType;
+      if (!acc[subject]) {
+        acc[subject] = {
+          subject: subject,
+          questionCount: 0
+        };
+      }
+      acc[subject].questionCount++;
+      return acc;
+    }, {} as Record<SubjectType, { subject: SubjectType, questionCount: number }>);
 
-  return Object.values(stats);
+    return Object.values(stats);
+  } catch (error) {
+    console.error('Error in getSubjectStats:', error)
+    return []
+  }
 }
