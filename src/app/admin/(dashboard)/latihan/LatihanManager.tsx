@@ -256,7 +256,7 @@ export default function LatihanManager({
 
   const handleClose = () => {
     setEditingQuestion(null)
-    setFormOptions(['', '', '', ''])
+    setFormOptions(Array(4).fill(null).map(() => ({ content: '', image: null, imageFile: null })))
     setCorrectOption(0)
     
     setImagePreview(null)
