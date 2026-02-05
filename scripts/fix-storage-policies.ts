@@ -29,7 +29,8 @@ async function main() {
       VALUES ('events_img', 'events_img', true),
              ('members_img', 'members_img', true),
              ('period_img', 'period_img', true),
-             ('latihan_img', 'latihan_img', true)
+             ('latihan_img', 'latihan_img', true),
+             ('option_img', 'option_img', true)
       ON CONFLICT (id) DO NOTHING;
     `)
     console.log('Buckets ensured.')
@@ -41,19 +42,19 @@ async function main() {
     // Policy for SELECT (Public Read)
     await prisma.$executeRawUnsafe(`
       DROP POLICY IF EXISTS "Public Access Select" ON storage.objects;
-      CREATE POLICY "Public Access Select" ON storage.objects FOR SELECT USING ( bucket_id IN ('events_img', 'members_img', 'period_img', 'latihan_img') );
+      CREATE POLICY "Public Access Select" ON storage.objects FOR SELECT USING ( bucket_id IN ('events_img', 'members_img', 'period_img', 'latihan_img', 'option_img') );
     `)
 
     // Policy for INSERT (Public Upload)
     await prisma.$executeRawUnsafe(`
       DROP POLICY IF EXISTS "Public Access Insert" ON storage.objects;
-      CREATE POLICY "Public Access Insert" ON storage.objects FOR INSERT WITH CHECK ( bucket_id IN ('events_img', 'members_img', 'period_img', 'latihan_img') );
+      CREATE POLICY "Public Access Insert" ON storage.objects FOR INSERT WITH CHECK ( bucket_id IN ('events_img', 'members_img', 'period_img', 'latihan_img', 'option_img') );
     `)
     
      // Policy for UPDATE (Public Update)
     await prisma.$executeRawUnsafe(`
       DROP POLICY IF EXISTS "Public Access Update" ON storage.objects;
-      CREATE POLICY "Public Access Update" ON storage.objects FOR UPDATE USING ( bucket_id IN ('events_img', 'members_img', 'period_img', 'latihan_img') );
+      CREATE POLICY "Public Access Update" ON storage.objects FOR UPDATE USING ( bucket_id IN ('events_img', 'members_img', 'period_img', 'latihan_img', 'option_img') );
     `)
 
     console.log('Policies applied.')

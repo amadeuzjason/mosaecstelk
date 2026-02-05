@@ -224,14 +224,25 @@ const QuizInterface: React.FC<QuizInterfaceProps> = ({ questions, grade, subject
                       <span className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold mr-4 shrink-0 transition-colors ${indicatorClass}`}>
                         {String.fromCharCode(65 + idx)}
                       </span>
-                      <span className={`text-base ${isSelected || (isSubmitted && option.isCorrect) ? 'text-gray-900 font-medium' : 'text-gray-600'}`}>
-                        <RenderOptionContent content={option.content} />
-                      </span>
+                      <div className="flex-1 min-w-0">
+                        {option.image && (
+                          <div className="mb-3 rounded-lg overflow-hidden border border-gray-100 w-fit bg-white">
+                            <img 
+                              src={option.image} 
+                              alt={`Option ${String.fromCharCode(65 + idx)}`}
+                              className="max-h-40 object-contain"
+                            />
+                          </div>
+                        )}
+                        <span className={`text-base block ${isSelected || (isSubmitted && option.isCorrect) ? 'text-gray-900 font-medium' : 'text-gray-600'}`}>
+                          <RenderOptionContent content={option.content} />
+                        </span>
+                      </div>
                       {isSubmitted && option.isCorrect && (
-                        <CheckCircle className="ml-auto w-5 h-5 text-green-600" />
+                        <CheckCircle className="ml-4 w-5 h-5 text-green-600 shrink-0" />
                       )}
                       {isSubmitted && isSelected && !option.isCorrect && (
-                        <XCircle className="ml-auto w-5 h-5 text-red-600" />
+                        <XCircle className="ml-4 w-5 h-5 text-red-600 shrink-0" />
                       )}
                     </button>
                   );

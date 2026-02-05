@@ -14,15 +14,19 @@ export async function createQuestion(prevState: any, formData: FormData) {
     const image = formData.get('image') as string | null
 
     // Parse options
-    // Expecting option_content_{i} and correct_option radio value
-    const optionsData: { content: string; isCorrect: boolean }[] = []
+    // Expecting option_content_{i}, option_image_{i}, and correct_option radio value
+    const optionsData: { content: string; image: string | null; isCorrect: boolean }[] = []
     const correctOptionIndex = parseInt(formData.get('correctOption') as string)
 
     for (let i = 0; i < 5; i++) {
       const optionContent = formData.get(`option_content_${i}`) as string
-      if (optionContent && optionContent.trim() !== '') {
+      const optionImage = formData.get(`option_image_${i}`) as string
+      
+      // Allow option if it has content OR image (or both)
+      if ((optionContent && optionContent.trim() !== '') || (optionImage && optionImage.trim() !== '')) {
         optionsData.push({
-          content: optionContent,
+          content: optionContent || '', // Ensure content is at least empty string if image is present
+          image: optionImage || null,
           isCorrect: i === correctOptionIndex
         })
       }
@@ -82,14 +86,17 @@ export async function updateQuestion(prevState: any, formData: FormData) {
       // OR update them if we track IDs. For simplicity, delete and recreate is often used but changes IDs.
       // Let's try transaction or just deleteMany then create.
       
-      const optionsData: { content: string; isCorrect: boolean }[] = []
+      const optionsData: { content: string; image: string | null; isCorrect: boolean }[] = []
       const correctOptionIndex = parseInt(formData.get('correctOption') as string)
   
       for (let i = 0; i < 5; i++) {
         const optionContent = formData.get(`option_content_${i}`) as string
-        if (optionContent && optionContent.trim() !== '') {
+        const optionImage = formData.get(`option_image_${i}`) as string
+
+        if ((optionContent && optionContent.trim() !== '') || (optionImage && optionImage.trim() !== '')) {
           optionsData.push({
-            content: optionContent,
+            content: optionContent || '',
+            image: optionImage || null,
             isCorrect: i === correctOptionIndex
           })
         }

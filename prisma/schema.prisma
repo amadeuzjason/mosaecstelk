@@ -45,6 +45,7 @@ model Question {
 model Option {
   id         String   @id @default(cuid())
   content    String
+  image      String?
   isCorrect  Boolean  @default(false)
   questionId String
   question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)

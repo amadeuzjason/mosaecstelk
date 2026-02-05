@@ -5,7 +5,7 @@ import { createQuestion, deleteQuestion, updateQuestion } from './actions'
 import { useFormState } from 'react-dom'
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import { useDebouncedCallback } from 'use-debounce'
-import { Plus, Search, Filter, Edit, Trash2, BookOpen, X, Save, AlertTriangle, CheckCircle, HelpCircle, Upload } from 'lucide-react'
+import { Plus, Search, Filter, Edit, Trash2, BookOpen, X, Save, AlertTriangle, CheckCircle, HelpCircle, Upload, Eye, EyeOff } from 'lucide-react'
 import { useToast } from '@/context/ToastContext'
 import { SUBJECTS, GRADE_LEVELS } from '@/lib/constants'
 import { uploadImage } from './upload-action'
@@ -24,6 +24,7 @@ const Difficulties = ['EASY', 'MEDIUM', 'HARD']
 type Option = {
   id: string
   content: string
+  image: string | null
   isCorrect: boolean
 }
 
@@ -36,6 +37,12 @@ type Question = {
   solution: string | null
   image: string | null
   options: Option[]
+}
+
+type FormOption = {
+  content: string
+  image: string | null
+  imageFile: File | null
 }
 
 const initialState: { message?: string; error?: string } = {
@@ -129,8 +136,13 @@ export default function LatihanManager({
   }
 
   // Temporary state for options in the form
-  const [formOptions, setFormOptions] = useState<string[]>(['', '', '', ''])
+  const [formOptions, setFormOptions] = useState<FormOption[]>(
+    Array(4).fill(null).map(() => ({ content: '', image: null, imageFile: null }))
+  )
   const [correctOption, setCorrectOption] = useState<number>(0)
+  
+  // LaTeX Preview Toggle State
+  const [showPreview, setShowPreview] = useState(true)
 
   // Subject input state
   const [subjectValue, setSubjectValue] = useState<string>('')
@@ -156,9 +168,40 @@ export default function LatihanManager({
     }
   }
 
+  const handleOptionImageChange = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0]
+      if (file.size > 5 * 1024 * 1024) {
+        showToast('Image size must be less than 5MB', 'error')
+        return
+      }
+      const newOptions = [...formOptions]
+      newOptions[index] = {
+        ...newOptions[index],
+        imageFile: file,
+        image: URL.createObjectURL(file) // Preview URL
+      }
+      setFormOptions(newOptions)
+    }
+  }
+
+  const removeOptionImage = (index: number) => {
+    const newOptions = [...formOptions]
+    newOptions[index] = {
+      ...newOptions[index],
+      imageFile: null,
+      image: null
+    }
+    setFormOptions(newOptions)
+  }
+
   const handleEdit = (question: Question) => {
     setEditingQuestion(question)
-    setFormOptions(question.options.map(o => o.content))
+    setFormOptions(question.options.map(o => ({
+      content: o.content,
+      image: o.image,
+      imageFile: null
+    })))
     const correctIndex = question.options.findIndex(o => o.isCorrect)
     setCorrectOption(correctIndex >= 0 ? correctIndex : 0)
     
@@ -178,7 +221,7 @@ export default function LatihanManager({
 
   const handleCreateOpen = () => {
     setEditingQuestion(null)
-    setFormOptions(['', '', '', ''])
+    setFormOptions(Array(4).fill(null).map(() => ({ content: '', image: null, imageFile: null })))
     setSubjectValue(Subjects[0])
     
     setImagePreview(null)
@@ -228,7 +271,7 @@ export default function LatihanManager({
   const handleFormSubmit = async (formData: FormData) => {
     setIsUploading(true)
     try {
-        // Upload image if present
+        // Upload question image if present
         if (imageFile) {
             const imageFormData = new FormData()
             imageFormData.append('file', imageFile)
@@ -245,6 +288,31 @@ export default function LatihanManager({
         } else {
              // If image cleared
              formData.delete('image')
+        }
+
+        // Upload option images
+        for (let i = 0; i < formOptions.length; i++) {
+            const option = formOptions[i]
+            let imageUrl = option.image
+
+            if (option.imageFile) {
+                const imageFormData = new FormData()
+                imageFormData.append('file', option.imageFile)
+                imageFormData.append('bucket', 'option_img')
+                const uploadResult = await uploadImage(imageFormData)
+
+                if (uploadResult.error || !uploadResult.url) {
+                    throw new Error(`Failed to upload image for option ${i + 1}: ${uploadResult.error}`)
+                }
+                imageUrl = uploadResult.url
+            }
+
+            formData.set(`option_content_${i}`, option.content)
+            if (imageUrl) {
+                formData.set(`option_image_${i}`, imageUrl)
+            } else {
+                formData.delete(`option_image_${i}`)
+            }
         }
 
         // Add subject value manually since it's a controlled input
@@ -270,13 +338,13 @@ export default function LatihanManager({
 
   const handleOptionChange = (index: number, value: string) => {
     const newOptions = [...formOptions]
-    newOptions[index] = value
+    newOptions[index] = { ...newOptions[index], content: value }
     setFormOptions(newOptions)
   }
 
   const addOption = () => {
     if (formOptions.length < 5) {
-        setFormOptions([...formOptions, ''])
+        setFormOptions([...formOptions, { content: '', image: null, imageFile: null }])
     }
   }
 
@@ -543,10 +611,20 @@ export default function LatihanManager({
               </div>
 
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
-                    <HelpCircle size={16} className="text-red-500" />
-                    Question Content
-                </label>
+                <div className="flex justify-between items-center mb-1">
+                    <label className="text-sm font-medium text-gray-700 flex items-center gap-1">
+                        <HelpCircle size={16} className="text-red-500" />
+                        Question Content
+                    </label>
+                    <button
+                        type="button"
+                        onClick={() => setShowPreview(!showPreview)}
+                        className="flex items-center gap-1 text-xs font-medium text-gray-500 hover:text-red-600 transition-colors"
+                    >
+                        {showPreview ? <EyeOff size={14} /> : <Eye size={14} />}
+                        {showPreview ? 'Hide Preview' : 'Show Preview'}
+                    </button>
+                </div>
                 <div className="flex flex-col gap-2">
                   <textarea
                     name="content"
@@ -557,7 +635,7 @@ export default function LatihanManager({
                     placeholder="Enter your question here... (Markdown & LaTeX supported)"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all resize-y"
                   />
-                  <MarkdownPreview content={contentValue} />
+                  {showPreview && <MarkdownPreview content={contentValue} />}
                 </div>
               </div>
 
@@ -569,36 +647,78 @@ export default function LatihanManager({
                 </label>
                 <div className="space-y-3">
                     {formOptions.map((opt, index) => (
-                        <div key={index} className="flex items-center gap-3">
-                            <input 
-                                type="radio" 
-                                name="correctOption" 
-                                value={index} 
-                                checked={correctOption === index} 
-                                onChange={() => setCorrectOption(index)}
-                                className="h-5 w-5 text-red-600 focus:ring-red-500 border-gray-300"
-                            />
-                            <div className="flex-1 relative flex flex-col gap-2">
-                                <input
-                                    type="text"
-                                    name={`option_content_${index}`}
-                                    value={opt}
-                                    onChange={(e) => handleOptionChange(index, e.target.value)}
-                                    placeholder={`Option ${index + 1}`}
-                                    required
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all"
+                        <div key={index} className="flex flex-col gap-3 p-3 border border-gray-100 rounded-lg bg-white">
+                            <div className="flex items-start gap-3">
+                                <input 
+                                    type="radio" 
+                                    name="correctOption" 
+                                    value={index} 
+                                    checked={correctOption === index} 
+                                    onChange={() => setCorrectOption(index)}
+                                    className="mt-3 h-5 w-5 text-red-600 focus:ring-red-500 border-gray-300"
                                 />
-                                <MarkdownPreview content={opt} />
+                                <div className="flex-1 relative flex flex-col gap-2">
+                                    <div className="flex gap-2">
+                                        <input
+                                            type="text"
+                                            name={`option_content_${index}`}
+                                            value={opt.content}
+                                            onChange={(e) => handleOptionChange(index, e.target.value)}
+                                            placeholder={`Option ${index + 1}`}
+                                            required={!opt.image}
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all"
+                                        />
+                                        <div className="relative">
+                                            <input
+                                                type="file"
+                                                accept="image/*"
+                                                onChange={(e) => handleOptionImageChange(index, e)}
+                                                className="hidden"
+                                                id={`option-image-${index}`}
+                                            />
+                                            <label
+                                                htmlFor={`option-image-${index}`}
+                                                className={`flex items-center justify-center p-2 border rounded-lg cursor-pointer transition-colors ${
+                                                    opt.image 
+                                                    ? 'border-red-200 bg-red-50 text-red-600' 
+                                                    : 'border-gray-300 hover:bg-gray-50 text-gray-500'
+                                                }`}
+                                                title="Upload Option Image"
+                                            >
+                                                <Upload size={20} />
+                                            </label>
+                                        </div>
+                                    </div>
+                                    
+                                    {opt.image && (
+                                        <div className="relative h-20 w-20 rounded-lg overflow-hidden border border-gray-200 group">
+                                            <img
+                                                src={opt.image}
+                                                alt={`Option ${index + 1}`}
+                                                className="h-full w-full object-cover"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => removeOptionImage(index)}
+                                                className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                            >
+                                                <X size={16} className="text-white" />
+                                            </button>
+                                        </div>
+                                    )}
+
+                                    {showPreview && opt.content && <MarkdownPreview content={opt.content} />}
+                                </div>
+                                <button 
+                                    type="button" 
+                                    onClick={() => removeOption(index)} 
+                                    className="text-gray-400 hover:text-red-500 transition-colors p-1 mt-2"
+                                    disabled={formOptions.length <= 2}
+                                    title={formOptions.length <= 2 ? "Minimum 2 options required" : "Remove option"}
+                                >
+                                    <X size={20} />
+                                </button>
                             </div>
-                            <button 
-                                type="button" 
-                                onClick={() => removeOption(index)} 
-                                className="text-gray-400 hover:text-red-500 transition-colors p-1"
-                                disabled={formOptions.length <= 2}
-                                title={formOptions.length <= 2 ? "Minimum 2 options required" : "Remove option"}
-                            >
-                                <X size={20} />
-                            </button>
                         </div>
                     ))}
                 </div>
@@ -624,7 +744,7 @@ export default function LatihanManager({
                     placeholder="Explain why the answer is correct... (Markdown & LaTeX supported)"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all resize-y"
                   />
-                  <MarkdownPreview content={solutionValue} />
+                  {showPreview && <MarkdownPreview content={solutionValue} />}
                 </div>
               </div>
 

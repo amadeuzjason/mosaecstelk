@@ -24,8 +24,16 @@ export async function uploadImage(formData: FormData) {
     const arrayBuffer = await file.arrayBuffer()
     const buffer = new Uint8Array(arrayBuffer)
 
+    // Determine bucket from formData or default to 'latihan_img'
+    const bucket = formData.get('bucket') as string || 'latihan_img'
+    const validBuckets = ['latihan_img', 'option_img']
+    
+    if (!validBuckets.includes(bucket)) {
+        throw new Error(`Invalid bucket: ${bucket}`)
+    }
+
     const { data, error } = await supabase.storage
-      .from('latihan_img')
+      .from(bucket)
       .upload(fileName, buffer, {
         contentType: file.type,
         upsert: false
@@ -37,7 +45,7 @@ export async function uploadImage(formData: FormData) {
     }
 
     const { data: { publicUrl } } = supabase.storage
-      .from('latihan_img')
+      .from(bucket)
       .getPublicUrl(fileName)
 
     return { url: publicUrl }
