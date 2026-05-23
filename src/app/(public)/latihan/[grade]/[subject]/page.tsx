@@ -23,15 +23,15 @@ export default async function QuizPage({
     redirect('/latihan');
   }
 
+  if (!SUBJECTS.includes(subject)) {
+    redirect('/latihan');
+  }
+
   const questions = await getQuestions({
     grade: [grade],
     subject: [subject],
     sort: 'oldest' // Maintain consistent order for quiz
   });
-
-  if (questions.length === 0) {
-    redirect('/latihan');
-  }
 
   const getGradeName = (g: GradeLevel) => {
     switch (g) {

@@ -9,10 +9,11 @@ export const SUBJECTS = [
   'PELUANG',
   'MOSAEC_EVALUATION',
   'LOGARITMA',
-  'STATISTIKA BIVARIAT'
+  'STATISTIKA BIVARIAT',
+  'LINGKARAN'
 ] as const;
 
-export type SubjectType = string;
+export type SubjectType = typeof SUBJECTS[number];
 
 export const GRADE_LEVELS = ['CLASS_10', 'CLASS_11', 'CLASS_12'] as const;
 export type GradeLevelType = typeof GRADE_LEVELS[number];
