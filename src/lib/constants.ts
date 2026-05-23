@@ -12,7 +12,7 @@ export const SUBJECTS = [
   'STATISTIKA BIVARIAT'
 ] as const;
 
-export type SubjectType = typeof SUBJECTS[number];
+export type SubjectType = string;
 
 export const GRADE_LEVELS = ['CLASS_10', 'CLASS_11', 'CLASS_12'] as const;
 export type GradeLevelType = typeof GRADE_LEVELS[number];
