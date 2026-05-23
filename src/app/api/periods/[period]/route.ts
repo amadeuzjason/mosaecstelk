@@ -34,11 +34,23 @@ export async function GET(
     };
     
     periodData.members.forEach(member => {
-      formattedData[member.position] = {
-        name: member.name,
-        ig: member.ig,
-        image: member.image,
-      };
+      const normalizedPosition = member.position.toLowerCase();
+      if (normalizedPosition === 'pembina' || normalizedPosition === 'ketua') {
+        formattedData[normalizedPosition] = {
+          name: member.name,
+          ig: member.ig,
+          image: member.image,
+          position: member.position,
+        };
+      } else {
+        const key = `${normalizedPosition}_${member.id}`;
+        formattedData[key] = {
+          name: member.name,
+          ig: member.ig,
+          image: member.image,
+          position: member.position,
+        };
+      }
     });
 
     return NextResponse.json(formattedData);

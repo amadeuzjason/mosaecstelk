@@ -7,6 +7,7 @@ interface Member {
   name: string;
   ig: string;
   image?: string;
+  position?: string;
 }
 
 interface PeriodeData {
@@ -232,7 +233,7 @@ const PeriodePage: React.FC<PeriodePageProps> = ({ period }) => {
             <div className="transform hover:scale-105 transition-transform duration-500">
               <TopMemberLayout
                 name={pembina.name}
-                position="Pembina"
+                position={pembina.position || "Pembina"}
                 ig={pembina.ig}
                 image={pembina.image}
                 imageAlign="left"
@@ -244,7 +245,7 @@ const PeriodePage: React.FC<PeriodePageProps> = ({ period }) => {
             <div className="transform hover:scale-105 transition-transform duration-500">
               <TopMemberLayout
                 name={ketua.name}
-                position="Ketua"
+                position={ketua.position || "Ketua"}
                 ig={ketua.ig}
                 image={ketua.image}
                 imageAlign="right"
@@ -277,7 +278,7 @@ const PeriodePage: React.FC<PeriodePageProps> = ({ period }) => {
               >
                 <MemberCard
                   name={member.name}
-                  position={pos}
+                  position={member.position || pos}
                   ig={member.ig}
                   image={member.image}
                   period={period}

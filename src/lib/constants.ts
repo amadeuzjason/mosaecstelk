@@ -7,7 +7,9 @@ export const SUBJECTS = [
   'TRIGONOMETRI',
   'STATISTIKA',
   'PELUANG',
-  'MOSAEC_EVALUATION'
+  'MOSAEC_EVALUATION',
+  'LOGARITMA',
+  'STATISTIKA BIVARIAT'
 ] as const;
 
 export type SubjectType = typeof SUBJECTS[number];

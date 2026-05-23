@@ -17,7 +17,7 @@ export default async function QuizPage({
 }) {
   // Validate params
   const grade = params.grade as GradeLevel;
-  const subject = params.subject as SubjectType;
+  const subject = decodeURIComponent(params.subject) as SubjectType;
 
   if (!Object.values(GradeLevel).includes(grade)) {
     redirect('/latihan');
