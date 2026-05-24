@@ -18,25 +18,25 @@ export default async function LatihanPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
-      <main className="container mx-auto px-4 py-12 flex-grow">
-        <div className="max-w-4xl mx-auto">
+      <main className="container mx-auto px-4 py-16 flex-grow">
+        <div className="max-w-5xl mx-auto">
           {/* Breadcrumb */}
-          <nav className="flex text-sm font-medium text-gray-500 mb-8" aria-label="Breadcrumb">
+          <nav className="flex text-sm font-medium text-gray-500 mb-10" aria-label="Breadcrumb">
             <span className="text-gray-900">Latihan Soal</span>
           </nav>
 
-          <div className="mb-12 text-center">
-            <h1 className="text-4xl font-bold text-gray-900 mb-4 font-playfair">
+          <div className="mb-14 text-center">
+            <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-5 font-playfair">
               Pilih Kelas
             </h1>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
               Silakan pilih jenjang kelas untuk melihat materi dan kumpulan soal latihan yang tersedia.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {displayStats.map((stat) => (
-              <ClassCard 
+              <ClassCard
                 key={stat.grade}
                 grade={stat.grade}
                 subjectCount={stat.subjectCount}

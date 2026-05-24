@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { ArrowRight, X } from 'lucide-react';
+import { ArrowRight, X, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface EventItem {
+  id: string;
   title: string;
   date: string;
   description: string;
@@ -13,10 +14,13 @@ interface EventItem {
   participants?: string;
 }
 
+const ITEMS_PER_PAGE = 6;
+
 const EventsPage: React.FC = () => {
   const [selectedEvent, setSelectedEvent] = useState<EventItem | null>(null);
   const [events, setEvents] = useState<EventItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -24,7 +28,14 @@ const EventsPage: React.FC = () => {
         const response = await fetch('/api/events');
         if (response.ok) {
           const data = await response.json();
-          setEvents(data);
+          // Sort newest first by date, fallback to createdAt order from API
+          const sorted = [...data].sort((a: EventItem, b: EventItem) => {
+            const da = new Date(a.date).getTime();
+            const db = new Date(b.date).getTime();
+            if (isNaN(da) || isNaN(db)) return 0;
+            return db - da;
+          });
+          setEvents(sorted);
         } else {
           console.error('Failed to fetch events');
         }
@@ -38,8 +49,20 @@ const EventsPage: React.FC = () => {
     fetchEvents();
   }, []);
 
+  const totalPages = Math.ceil(events.length / ITEMS_PER_PAGE);
+  const indexOfLast = currentPage * ITEMS_PER_PAGE;
+  const indexOfFirst = indexOfLast - ITEMS_PER_PAGE;
+  const currentEvents = events.slice(indexOfFirst, indexOfLast);
+
+  const formatDate = (date: string) => {
+    const d = new Date(date);
+    return isNaN(d.getTime())
+      ? date
+      : d.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  };
+
   const EventCard: React.FC<EventItem & { onClick: () => void }> = ({ title, date, description, image, onClick }) => (
-    <div 
+    <div
       className="bg-white rounded-xl shadow-lg overflow-hidden flex flex-col transform hover:-translate-y-3 hover:shadow-2xl transition-all duration-500 cursor-pointer border-2 border-transparent hover:border-red-200 group"
       onClick={onClick}
     >
@@ -59,13 +82,8 @@ const EventsPage: React.FC = () => {
       <div className="p-6 flex-grow flex flex-col bg-gradient-to-b from-white to-gray-50">
         <h3 className="text-xl font-playfair font-bold text-gray-900 mb-2">{title}</h3>
         <p className="text-sm font-semibold text-red-700 mb-3 flex items-center gap-2">
-          <span className="text-lg">📅</span> 
-          {(() => {
-            const d = new Date(date);
-            return isNaN(d.getTime()) 
-              ? date 
-              : d.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-          })()}
+          <span className="text-lg">📅</span>
+          {formatDate(date)}
         </p>
         <p className="text-gray-600 flex-grow mb-4 line-clamp-3">{description}</p>
         <button className="mt-auto inline-flex items-center text-red-800 font-semibold hover:text-red-900 group-hover:gap-3 transition-all duration-300">
@@ -79,7 +97,7 @@ const EventsPage: React.FC = () => {
     <>
       <div className="bg-gradient-to-b from-gray-100 to-white animate-fade-in relative overflow-hidden min-h-screen">
         {/* Mathematical background elements */}
-        <div className="absolute inset-0 opacity-5">
+        <div className="absolute inset-0 opacity-5 pointer-events-none">
           <div className="absolute top-20 left-10 text-6xl font-playfair animate-float-1">∑</div>
           <div className="absolute top-40 right-20 text-5xl font-playfair animate-float-2">∫</div>
           <div className="absolute bottom-32 left-1/4 text-7xl font-playfair animate-float-3">∞</div>
@@ -97,27 +115,93 @@ const EventsPage: React.FC = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {events.map((event, index) => (
-              <div 
-                key={index}
-                className="animate-fade-in"
-                style={{ animationDelay: `${index * 0.1}s` }}
-              >
-                <EventCard {...event} onClick={() => setSelectedEvent(event)} />
+          {/* Loading skeleton */}
+          {loading && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="bg-white rounded-xl shadow-lg overflow-hidden animate-pulse">
+                  <div className="w-full h-56 bg-gray-200" />
+                  <div className="p-6 space-y-3">
+                    <div className="h-5 bg-gray-200 rounded w-3/4" />
+                    <div className="h-4 bg-gray-200 rounded w-1/2" />
+                    <div className="h-4 bg-gray-200 rounded w-full" />
+                    <div className="h-4 bg-gray-200 rounded w-5/6" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {!loading && events.length === 0 && (
+            <div className="text-center py-20">
+              <p className="text-gray-500 text-lg">Belum ada kegiatan yang tersedia.</p>
+            </div>
+          )}
+
+          {!loading && events.length > 0 && (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {currentEvents.map((event, index) => (
+                  <div
+                    key={event.id || index}
+                    className="animate-fade-in"
+                    style={{ animationDelay: `${index * 0.08}s` }}
+                  >
+                    <EventCard {...event} onClick={() => setSelectedEvent(event)} />
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="flex justify-center items-center mt-14 gap-2">
+                  <button
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    className="flex items-center gap-1 px-4 py-2 rounded-lg border border-gray-200 bg-white text-gray-700 hover:bg-red-50 hover:border-red-200 hover:text-red-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                    Sebelumnya
+                  </button>
+
+                  <div className="flex gap-1">
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => (
+                      <button
+                        key={num}
+                        onClick={() => setCurrentPage(num)}
+                        className={`w-10 h-10 rounded-lg border text-sm font-semibold transition-all ${
+                          currentPage === num
+                            ? 'bg-red-800 text-white border-red-800 shadow-md'
+                            : 'bg-white text-gray-700 border-gray-200 hover:bg-red-50 hover:border-red-200 hover:text-red-800'
+                        }`}
+                      >
+                        {num}
+                      </button>
+                    ))}
+                  </div>
+
+                  <button
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages}
+                    className="flex items-center gap-1 px-4 py-2 rounded-lg border border-gray-200 bg-white text-gray-700 hover:bg-red-50 hover:border-red-200 hover:text-red-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                  >
+                    Selanjutnya
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+            </>
+          )}
         </div>
       </div>
 
       {/* Event Detail Modal */}
       {selectedEvent && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 animate-fade-in"
           onClick={() => setSelectedEvent(null)}
         >
-          <div 
+          <div
             className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl transform animate-scale-in relative"
             onClick={(e) => e.stopPropagation()}
           >
@@ -127,7 +211,7 @@ const EventsPage: React.FC = () => {
             >
               <X className="w-6 h-6" />
             </button>
-            
+
             <div className="relative">
               <img
                 src={selectedEvent.image}
@@ -144,10 +228,10 @@ const EventsPage: React.FC = () => {
                 <h2 className="text-3xl md:text-4xl font-playfair font-bold mb-2">
                   {selectedEvent.title}
                 </h2>
-                <p className="text-lg text-red-200">{selectedEvent.date}</p>
+                <p className="text-lg text-red-200">{formatDate(selectedEvent.date)}</p>
               </div>
             </div>
-            
+
             <div className="p-6 md:p-8">
               <div className="space-y-4 mb-6">
                 {selectedEvent.location && (
@@ -169,7 +253,7 @@ const EventsPage: React.FC = () => {
                   </div>
                 )}
               </div>
-              
+
               <div className="border-t pt-6">
                 <h3 className="text-xl font-playfair font-bold text-gray-900 mb-3">Deskripsi</h3>
                 <p className="text-gray-600 leading-relaxed mb-4">{selectedEvent.description}</p>

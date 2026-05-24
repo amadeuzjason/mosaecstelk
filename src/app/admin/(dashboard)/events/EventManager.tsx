@@ -5,7 +5,7 @@ import { createEvent, deleteEvent, updateEvent } from './actions'
 import { useFormState } from 'react-dom'
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import { useDebouncedCallback } from 'use-debounce'
-import { Plus, Search, Calendar, MapPin, Users as UsersIcon, Edit, Trash2, X, Save, Image as ImageIcon } from 'lucide-react'
+import { Plus, Search, Calendar, MapPin, Users as UsersIcon, Edit, Trash2, X, Save, Image as ImageIcon, Loader2 } from 'lucide-react'
 import { useToast } from '@/context/ToastContext'
 
 type Event = {
@@ -37,6 +37,7 @@ export default function EventManager({
   const [editingEvent, setEditingEvent] = useState<Event | null>(null)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [eventToDelete, setEventToDelete] = useState<Event | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   
   const [createState, createAction] = useFormState(createEvent, initialState)
   const [updateState, updateAction] = useFormState(updateEvent, initialState)
@@ -110,6 +111,7 @@ export default function EventManager({
   const handleClose = () => {
     setEditingEvent(null)
     setIsModalOpen(false)
+    setIsSubmitting(false)
   }
 
   return (
@@ -364,10 +366,15 @@ export default function EventManager({
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-red-800 text-white rounded-lg hover:bg-red-900 transition-colors flex items-center gap-2 font-medium shadow-md shadow-red-800/20"
+                  disabled={isSubmitting}
+                  className="px-4 py-2 bg-red-800 text-white rounded-lg hover:bg-red-900 transition-colors flex items-center gap-2 font-medium shadow-md shadow-red-800/20 disabled:opacity-60"
+                  onClick={() => setIsSubmitting(true)}
                 >
-                  <Save size={18} />
-                  Save Event
+                  {isSubmitting ? (
+                    <><Loader2 size={16} className="animate-spin" /> Menyimpan...</>
+                  ) : (
+                    <><Save size={18} /> Save Event</>
+                  )}
                 </button>
               </div>
             </form>

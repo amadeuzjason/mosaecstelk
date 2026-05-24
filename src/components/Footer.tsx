@@ -40,6 +40,9 @@ const Footer: React.FC = () => (
           <p className="text-sm text-gray-400 font-playfair">
             &copy; {new Date().getFullYear()} <span className="text-red-200 font-bold">MOSAEC STELK</span>. All rights reserved.
           </p>
+          <p className="text-xs text-gray-500 font-playfair">
+            Made by <span className="text-red-300 font-semibold">Jason Daryl Amadeus</span>
+          </p>
           <div className="flex items-center gap-2 text-xs text-gray-500">
             <span className="font-playfair italic">f(x) = Excellence</span>
           </div>

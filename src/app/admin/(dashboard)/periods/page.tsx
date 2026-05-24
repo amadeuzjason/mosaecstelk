@@ -24,7 +24,7 @@ export default async function PeriodsPage({
     prisma.period.findMany({
       where,
       orderBy: {
-        period: 'asc',
+        period: 'desc',
       },
       include: {
         _count: {
