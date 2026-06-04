@@ -11,7 +11,7 @@ interface Period {
   image: string | null;
 }
 
-const ITEMS_PER_PAGE = 8;
+const ITEMS_PER_PAGE = 16;
 
 const PeriodeIndexPage: React.FC = () => {
   const [periods, setPeriods] = useState<Period[]>([]);
@@ -76,7 +76,7 @@ const PeriodeIndexPage: React.FC = () => {
           {/* Loading skeleton */}
           {loading && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-              {Array.from({ length: 8 }).map((_, i) => (
+              {Array.from({ length: 16 }).map((_, i) => (
                 <div
                   key={i}
                   className="rounded-xl overflow-hidden shadow-xl h-64 bg-gray-200 animate-pulse"

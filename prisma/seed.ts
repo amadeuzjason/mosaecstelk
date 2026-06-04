@@ -30,7 +30,7 @@ async function main() {
       description:
         'Projek membuat calculator, tidak hanya menambah pemahaman tentang Matematika, juga memperkenalkan mengenai pemrograman.',
       image: '/assets/events/mac.jpg',
-      details: 'MAC (MOSAEC: Calculation Project) adalah proyek pembelajaran yang menggabungkan konsep matematika dengan pemrograman. Peserta belajar membuat kalkulator fungsional menggunakan berbagai bahasa pemrograman, mulai dari Python hingga JavaScript. Proyek ini tidak hanya meningkatkan pemahaman logika matematika tetapi juga keterampilan coding praktis.',
+      details: 'MOSAEC: Calculation Project adalah proyek pembelajaran yang menggabungkan konsep matematika dengan pemrograman. Peserta belajar membuat kalkulator fungsional menggunakan berbagai bahasa pemrograman, mulai dari Python hingga JavaScript. Proyek ini tidak hanya meningkatkan pemahaman logika matematika tetapi juga keterampilan coding praktis.',
       location: 'SMK Telkom Makassar',
       participants: 'Anggota MOSAEC STELK',
     },
@@ -110,6 +110,16 @@ async function main() {
         { position: 'ketua', name: "ANDI RIZKY ALYA ANUGRAH", ig: "aandialyaa", image: "alya" },
         { position: 'wakil', name: "NURAZIZAH DWI PUTRI", ig: "nrazzh_0829", image: "chica" },
       ]
+    },
+    {
+      period: 28,
+      year: 2021,
+      members: []
+    },
+    {
+      period: 27,
+      year: 2020,
+      members: []
     }
   ]
 

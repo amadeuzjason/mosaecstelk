@@ -289,6 +289,11 @@ const HomePage: React.FC<HomePageProps> = ({ setCurrentPage }) => {
                           src={src}
                           alt={`Arsip Angkatan ${period}`}
                           className="w-full h-full object-cover transform group-hover:scale-125 transition-transform duration-700"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).onerror = null;
+                            (e.target as HTMLImageElement).src =
+                              'https://placehold.co/400x300/991b1b/ffffff?text=Angkatan+' + period;
+                          }}
                         />
                         <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/40 to-black/20 flex items-center justify-center group-hover:bg-linear-to-t group-hover:from-black/70 group-hover:via-black/30 group-hover:to-black/10 transition-all duration-500">
                           <div className="text-center">

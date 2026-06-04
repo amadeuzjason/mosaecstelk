@@ -216,6 +216,11 @@ const PeriodePage: React.FC<PeriodePageProps> = ({ period }) => {
             : `/assets/periode/${year}/tim${year}.jpg`}
           alt={`Foto tim angkatan ${period}`}
           className="w-full lg:h-228 md:h-full object-cover shadow-2xl transform hover:scale-105 transition-transform duration-700"
+          onError={(e) => {
+            (e.target as HTMLImageElement).onerror = null;
+            (e.target as HTMLImageElement).src =
+              'https://placehold.co/400x300/991b1b/ffffff?text=Angkatan+' + period;
+          }}
         />
       </div>
       
