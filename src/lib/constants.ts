@@ -34,6 +34,8 @@ export const SUBJECTS = [
   'LIMIT FUNGSI',
   'TURUNAN',
   'INTEGRAL',
+  'FR 2025 TKA SMA MTK LANJUT',
+  'FR 2025 TKA SMA MTK UMUM',
 ] as const;
 
 export type SubjectType = typeof SUBJECTS[number];
